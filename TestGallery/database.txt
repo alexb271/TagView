@@ -1,0 +1,43 @@
+[TagView database file]
+
+[item]
+[path]/home/user/Code/TestGallery/blue.png
+[type]image
+[tags]blue 
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/blue_green.png
+[type]image
+[tags]blue green 
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/blue_red.png
+[type]image
+[tags]blue red
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/green.png
+[type]image
+[tags]green 
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/green_red.png
+[type]image
+[tags]green red 
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/red.png
+[type]image
+[tags]red
+[fave]no
+
+[item]
+[path]/home/user/Code/TestGallery/red_blue_green.png
+[type]image
+[tags]red blue green 
+[fave]yes
