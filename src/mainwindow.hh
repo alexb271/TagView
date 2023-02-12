@@ -18,6 +18,7 @@
 #include "tagpicker.hh"
 #include "mainmenu.hh"
 #include "tagdb.hh"
+#include "additemwindow.hh"
 
 class MainWindow : public Gtk::ApplicationWindow {
     public:
@@ -40,6 +41,9 @@ class MainWindow : public Gtk::ApplicationWindow {
         Gtk::MenuButton button_main_menu;
         ViewerControls viewer_controls;
 
+        // other windows
+        AddItemWindow add_item_window;
+
         // main regular widgets
         Gtk::Box box;
         Gtk::Separator sep;
@@ -61,4 +65,5 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_item_selected(size_t id);
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
         void on_hide_viewer();
+        void on_test();
 };

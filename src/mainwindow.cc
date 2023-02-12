@@ -25,6 +25,7 @@ MainWindow::MainWindow()
     main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::load_database));
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
+    main_menu.signal_test().connect(sigc::mem_fun(*this, &MainWindow::on_test));
 
     // configure header
     header.set_show_title_buttons(true);
@@ -140,6 +141,11 @@ void MainWindow::on_hide_viewer() {
     viewer_controls.set_visible(false);
     gallery.set_visible(true);
     gallery.grab_focus();
+}
+
+void MainWindow::on_test() {
+    main_menu.hide();
+    add_item_window.show();
 }
 
 MainWindow::~MainWindow() {

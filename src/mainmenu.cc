@@ -12,7 +12,8 @@ MainMenu::MainMenu()
     button_add_item("Add Item"),
     button_default_exclude("Default Exclude"),
     button_preferences("Preferences"),
-    button_about("About")
+    button_about("About"),
+    button_test("Test")
 {
     // button config
     button_load_database.set_has_frame(false);
@@ -42,6 +43,7 @@ MainMenu::MainMenu()
     box.append(checkbutton_show_tag_picker);
     box.append(button_preferences);
     box.append(button_about);
+    box.append(button_test);
 
     set_child(box);
 }
@@ -91,3 +93,6 @@ Glib::SignalProxy<void()> MainMenu::signal_signal_about() {
     return button_about.signal_clicked();
 }
 
+Glib::SignalProxy<void()> MainMenu::signal_test() {
+    return button_test.signal_clicked();
+}

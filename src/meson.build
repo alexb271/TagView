@@ -45,4 +45,7 @@ src_files = files(
                  # as well as write to a file and it is responsible for
                  # actually fulfilling the queries based on tags set
                  # buy the user in the Tag Picker widget.
-                 'tagdb.cc')
+                 'tagdb.cc',
+                 
+                 # Window for adding images to the database.
+                 'additemwindow.cc')
