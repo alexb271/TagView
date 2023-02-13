@@ -18,7 +18,7 @@
 #include "tagpicker.hh"
 #include "mainmenu.hh"
 #include "tagdb.hh"
-#include "additemwindow.hh"
+#include "itemwindow.hh"
 
 class MainWindow : public Gtk::ApplicationWindow {
     public:

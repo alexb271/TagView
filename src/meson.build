@@ -39,7 +39,7 @@ src_files = files(
                  # sections in the Tag Picker. Tags are derived from
                  # GtkBox and typically contain a label with the tag's
                  # name and buttons for actions such as add or exclude.
-                 'tag.cc',
+                 'tagutil.cc',
 
                  # The database in the backend. It can load from a file
                  # as well as write to a file and it is responsible for
@@ -48,4 +48,4 @@ src_files = files(
                  'tagdb.cc',
                  
                  # Window for adding images to the database.
-                 'additemwindow.cc')
+                 'itemwindow.cc')

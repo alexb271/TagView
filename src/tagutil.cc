@@ -1,5 +1,5 @@
 // project
-#include "tag.hh"
+#include "tagutil.hh"
 
 // TagQuery implementation
 TagQuery::TagQuery(std::vector<Glib::ustring> tags_to_include,

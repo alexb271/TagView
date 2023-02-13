@@ -19,7 +19,7 @@
 #include <sigc++/signal.h>
 
 // project
-#include "tag.hh"
+#include "tagutil.hh"
 
 class TagPicker : public Gtk::Box {
     public:
