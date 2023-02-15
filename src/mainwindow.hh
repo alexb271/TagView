@@ -42,7 +42,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         ViewerControls viewer_controls;
 
         // other windows
-        AddItemWindow add_item_window;
+        ItemWindow add_item_window;
 
         // main regular widgets
         Gtk::Box box;

@@ -145,6 +145,7 @@ void MainWindow::on_hide_viewer() {
 
 void MainWindow::on_test() {
     main_menu.hide();
+    add_item_window.set_completer_data(db.get_all_tags());
     add_item_window.show();
 }
 
