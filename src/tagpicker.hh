@@ -55,17 +55,17 @@ class TagPicker : public Gtk::Box {
         // included tag display
         Gtk::ScrolledWindow include_scw;
         Gtk::Box include_box;
-        std::vector<TagInQuery> vec_include_widgets;
+        std::vector<ItemInQuery> vec_include_widgets;
 
         // excluded tag display
         Gtk::ScrolledWindow exclude_scw;
         Gtk::Box exclude_box;
-        std::vector<TagInQuery> vec_exclude_widgets;
+        std::vector<ItemInQuery> vec_exclude_widgets;
 
         // current image tags display
         Gtk::ScrolledWindow outside_scw;
         Gtk::Box outside_box;
-        std::vector<TagOutsideQuery> vec_outside_widgets;
+        std::vector<ItemOutsideQuery> vec_outside_widgets;
 
         // other widgets
         Gtk::Label include_label;
@@ -81,7 +81,7 @@ class TagPicker : public Gtk::Box {
 
         // functions
         void remove(Gtk::Box &box,
-                std::vector<TagInQuery> &widget_vec,
+                std::vector<ItemInQuery> &widget_vec,
                 std::vector<Glib::ustring> &tag_vec,
                 const Glib::ustring &tag);
 

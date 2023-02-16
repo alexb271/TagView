@@ -31,12 +31,11 @@ class TagQuery {
 // that are either currently in the query or are currently
 // being excluded from the query.
 // These tags can be removed from the query.
-class TagInQuery : public Gtk::Box {
+class ItemInQuery : public Gtk::Box {
     public:
-        TagInQuery();
-        TagInQuery(const Glib::ustring &tag_name);
+        ItemInQuery(const Glib::ustring &tag_name);
         void set_tag(const Glib::ustring &tag);
-        Glib::ustring get_tag();
+        Glib::ustring get_text() const;
         Glib::SignalProxy<void()> signal_remove();
 
     private:
@@ -47,12 +46,12 @@ class TagInQuery : public Gtk::Box {
 // class to be placed in a vertical Gtk::Box showing tags
 // of the currently viewed image which are not part of the query.
 // These tags can either be added to or excluded from the query.
-class TagOutsideQuery : public Gtk::Box {
+class ItemOutsideQuery : public Gtk::Box {
     public:
-        TagOutsideQuery(bool exclude_button = false);
-        TagOutsideQuery(const Glib::ustring &tag_name, bool exclude_button = true);
+        ItemOutsideQuery(bool exclude_button = false);
+        ItemOutsideQuery(const Glib::ustring &tag_name, bool exclude_button = true);
         void set_tag(const Glib::ustring &tag);
-        Glib::ustring get_tag();
+        Glib::ustring get_text() const;
         Glib::SignalProxy<void()> signal_add();
         Glib::SignalProxy<void()> signal_exclude();
 
@@ -62,85 +61,44 @@ class TagOutsideQuery : public Gtk::Box {
         Gtk::Button exclude;
 };
 
-// class to hold a dynamic list of Gtk::Widgets in a vertical
-// Gtk::Box. This is primarily meant for TagInQuery and
-// TagOutsideQuery.
-
-template<typename T>
-class ItemList : public Gtk::ScrolledWindow {
-    // only accept subclasses of Gtk::Widget, since in all cases
-    // type T will be attempted to be inserted into a Gtk::Box
-    static_assert(std::is_base_of<Gtk::Widget, T>::value, "T must inherit from Gtk::Widget");
-
+// class to hold a dynamic list of ItemInQuery widgets
+class ItemInQueryList : public Gtk::ScrolledWindow {
     public:
-        ItemList() {
-            // box setup
-            box.set_orientation(Gtk::Orientation::VERTICAL);
+        ItemInQueryList();
 
-            // scrolled window setup
-            set_propagate_natural_height(true);
-            set_propagate_natural_width(true);
-            set_child(box);
-        }
-
-        T& create() {
-            vec_widgets.push_back(T());
-            box.append(vec_widgets[vec_widgets.size() - 1]);
-            return vec_widgets[vec_widgets.size() - 1];
-        }
-
-        void remove_at(size_t idx) {
-            box.remove(vec_widgets.at(idx));
-            vec_widgets.erase(vec_widgets.begin() + idx);
-        }
-
-        void clear() {
-            for (T &item : vec_widgets) {
-                box.remove(item);
-            }
-            vec_widgets.clear();
-        }
-
-        size_t size() const {
-            return vec_widgets.size();
-        }
-
-        T& operator[] (size_t idx) {
-            return vec_widgets.at(idx);
-        }
+        void append(const Glib::ustring &text);
+        void clear();
+        const std::set<Glib::ustring> &get_content() const;
+        sigc::signal<void (const std::set<Glib::ustring> &)> signal_contents_changed();
 
     private:
-        Gtk::Box box;
-        std::vector<T> vec_widgets;
+        Gtk::Box widgets;
+        std::set<Glib::ustring> items;
+        sigc::signal<void (const std::set<Glib::ustring> &)> private_contents_changed;
+
+        // signal handlers
+        void on_signal_remove(ItemInQuery *item);
 };
 
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
 
-class TagEditor : public Gtk::Box {
+class TagPickerBase : public Gtk::Box {
     public:
-        TagEditor(Glib::ustring title);
+        TagPickerBase(Glib::ustring title);
 
+        const std::set<Glib::ustring> &get_content() const;
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
         void set_allow_create_new_tag(bool allow_create_new_tag);
-        bool get_allow_create_new_tag();
+        bool get_allow_create_new_tag() const;
 
         // C signal handler friend function
         friend void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
 
-        // signal forwarding
-        sigc::signal<void (const std::vector<Glib::ustring> &)> signal_contents_changed();
-
     protected:
         // tags
         std::vector<Glib::ustring> tags_all;
-        std::vector<Glib::ustring> tags_picked;
-        ItemList<TagInQuery> tag_widgets;
-
-        // display widgets
+        ItemInQueryList tags;
         Gtk::Label lbl_title;
-
-        // signals
-        sigc::signal<void (const std::vector<Glib::ustring> &)> private_contents_changed;
 
         // functions
         void add_tag(const Glib::ustring &tag);
@@ -165,7 +123,6 @@ class TagEditor : public Gtk::Box {
         bool allow_create_new_tag;
 
         // signal handlers
-        void on_signal_remove(const Glib::ustring &tag);
         bool on_match_selected(const Gtk::TreeModel::iterator &iter);
         bool on_completion_match(const Glib::ustring &key,
                                  const Gtk::TreeModel::const_iterator &iter);

@@ -10,7 +10,6 @@ ItemWindow::ItemWindow()
    tag_editor.set_hexpand(false);
    tag_editor.set_halign(Gtk::Align::START);
    tag_editor.set_valign(Gtk::Align::START);
-   tag_editor.signal_contents_changed().connect(sigc::mem_fun(*this, &ItemWindow::on_tags_changed));
 
     // box setup
     box.set_margin(15);

@@ -20,7 +20,7 @@ class ItemWindow : public Gtk::Window {
         Gtk::ScrolledWindow scw;
         Gtk::Box box;
 
-        TagEditor tag_editor;
+        TagPickerBase tag_editor;
 
         // signal handlers
         bool on_close_request() override;

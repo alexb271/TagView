@@ -122,7 +122,7 @@ void TagPicker::set_current_item_tags(const std::set<Glib::ustring> &tags) {
 
     // add all tags as new widgets
     for (const Glib::ustring &tag : tags) {
-        vec_outside_widgets.push_back(TagOutsideQuery(tag));
+        vec_outside_widgets.push_back(ItemOutsideQuery(tag));
 
         // connect signal handlers with sigc::bind,
         // to supple the tag as a string along with the signal
@@ -154,7 +154,7 @@ sigc::signal<void (TagQuery)> TagPicker::signal_query_changed() {
 }
 
 void TagPicker::remove(Gtk::Box &box,
-        std::vector<TagInQuery> &widget_vec,
+        std::vector<ItemInQuery> &widget_vec,
         std::vector<Glib::ustring> &tag_vec,
         const Glib::ustring &tag)
 {
@@ -186,7 +186,7 @@ void TagPicker::on_signal_add(const Glib::ustring &tag) {
     tags_include.push_back(tag);
 
     // create the widget representing the tag and connect its signal
-    vec_include_widgets.push_back(TagInQuery(tag));
+    vec_include_widgets.push_back(ItemInQuery(tag));
     vec_include_widgets[vec_include_widgets.size() - 1].signal_remove()
         .connect(sigc::bind(sigc::mem_fun(*this, &TagPicker::on_signal_remove), tag, false));
 
@@ -208,7 +208,7 @@ void TagPicker::on_signal_exclude(const Glib::ustring &tag) {
     tags_exclude.push_back(tag);
 
     // create the widget representing the tag and connect its signal
-    vec_exclude_widgets.push_back(TagInQuery(tag));
+    vec_exclude_widgets.push_back(ItemInQuery(tag));
     vec_exclude_widgets[vec_exclude_widgets.size() - 1].signal_remove()
         .connect(sigc::bind(sigc::mem_fun(*this, &TagPicker::on_signal_remove), tag, true));
 
