@@ -1,13 +1,9 @@
-// standard library
-#include <algorithm>
-
 // project
-#include "gtkmm/object.h"
-#include "tagutil.hh"
+#include "tagutils.hh"
 
 // TagQuery implementation
-TagQuery::TagQuery(std::vector<Glib::ustring> tags_to_include,
-                   std::vector<Glib::ustring> tags_to_exclude)
+TagQuery::TagQuery(std::set<Glib::ustring> tags_to_include,
+                   std::set<Glib::ustring> tags_to_exclude)
 :
     tags_include(tags_to_include),
     tags_exclude(tags_to_exclude)
@@ -38,27 +34,6 @@ Glib::ustring ItemInQuery::get_text() const {
 
 Glib::SignalProxy<void()> ItemInQuery::signal_remove() {
     return remove.signal_clicked();
-}
-
-// TagOutsideQuery implementation
-ItemOutsideQuery::ItemOutsideQuery(bool exclude_button) {
-    add.set_has_frame(false);
-    add.set_icon_name("list-add-symbolic");
-    add.set_hexpand(true);
-    add.set_halign(Gtk::Align::END);
-
-    if (exclude_button) {
-        exclude.set_has_frame(false);
-        exclude.set_icon_name("action-unavailable-symbolic");
-        exclude.set_halign(Gtk::Align::END);
-    }
-
-    set_orientation(Gtk::Orientation::HORIZONTAL);
-    append(name);
-    append(add);
-    if (exclude_button) {
-        append(exclude);
-    }
 }
 
 ItemOutsideQuery::ItemOutsideQuery(const Glib::ustring &tag_name, bool exclude_button) {
@@ -99,18 +74,23 @@ Glib::SignalProxy<void()> ItemOutsideQuery::signal_exclude() {
 }
 
 // ItemInQueryList implementation
-
-ItemInQueryList::ItemInQueryList() {
+ItemList::ItemList(ItemList::Type type)
+:
+    type(type)
+{
     // box setup
-    widgets.set_orientation(Gtk::Orientation::VERTICAL);
+    box.set_orientation(Gtk::Orientation::VERTICAL);
 
     // scrolled window setup
     set_propagate_natural_height(true);
     set_propagate_natural_width(true);
-    set_child(widgets);
+    set_child(box);
 }
 
-void ItemInQueryList::append(const Glib::ustring &text) {
+void ItemList::append(const Glib::ustring &text) {
+    // check for zero length string
+    if (text.size() == 1) { return; }
+
     // check if the database already contains this item
     if (items.count(text) != 0) { return; }
 
@@ -118,56 +98,108 @@ void ItemInQueryList::append(const Glib::ustring &text) {
     items.insert(text);
 
     // create the widget representing the tag and connect its signal
-    ItemInQuery *tag_widget = Gtk::make_managed<ItemInQuery>(text);
-    tag_widget->signal_remove().connect(
-            sigc::bind(sigc::mem_fun(*this, &ItemInQueryList::on_signal_remove), tag_widget));
-    widgets.append(*tag_widget);
+    if (type == ItemList::Type::INSIDE) {
+        std::unique_ptr<ItemInQuery> tag_widget = std::make_unique<ItemInQuery>(text);
+        tag_widget->signal_remove().connect(
+                sigc::bind(sigc::mem_fun(*this, &ItemList::on_signal_remove), text));
+
+        box.append(*tag_widget);
+        widgets.push_back(std::move(tag_widget));
+    }
+
+    else if (type == ItemList::Type::OUTSIDE) {
+        std::unique_ptr<ItemOutsideQuery> tag_widget = std::make_unique<ItemOutsideQuery>(text);
+        tag_widget->signal_add().connect(
+                sigc::bind(sigc::mem_fun(*this, &ItemList::on_signal_add), text));
+
+        box.append(*tag_widget);
+        widgets.push_back(std::move(tag_widget));
+    }
+
+    else if (type == ItemList::Type::OUTSIDE_WITH_EXCLUDE) {
+        std::unique_ptr<ItemOutsideQuery> tag_widget = std::make_unique<ItemOutsideQuery>(text, true);
+        tag_widget->signal_add().connect(
+                sigc::bind(sigc::mem_fun(*this, &ItemList::on_signal_add), text));
+        tag_widget->signal_exclude().connect(
+                sigc::bind(sigc::mem_fun(*this, &ItemList::on_signal_exclude), text));
+
+        box.append(*tag_widget);
+        widgets.push_back(std::move(tag_widget));
+    }
+}
+
+void ItemList::append_and_notify(const Glib::ustring &text) {
+    append(text);
 
     // signal changes
     private_contents_changed.emit(items);
 }
-
-void ItemInQueryList::clear() {
-    Gtk::Widget *item = widgets.get_first_child();
+void ItemList::clear() {
+    items.clear();
+    widgets.clear();
+    Gtk::Widget *item = box.get_first_child();
     while(item) {
-        widgets.remove(*item);
-        item = widgets.get_first_child();
+        box.remove(*item);
+        item = box.get_first_child();
     }
 }
 
-const std::set<Glib::ustring> &ItemInQueryList::get_content() const {
+const std::set<Glib::ustring> &ItemList::get_content() const {
     return items;
 }
 
-sigc::signal<void (const std::set<Glib::ustring> &)> ItemInQueryList::signal_contents_changed() {
+sigc::signal<void (const std::set<Glib::ustring> &)> ItemList::signal_contents_changed() {
     return private_contents_changed;
 }
 
-void ItemInQueryList::on_signal_remove(ItemInQuery *item) {
+sigc::signal<void (const Glib::ustring &)> ItemList::signal_add() {
+    return private_add;
+}
+
+sigc::signal<void (const Glib::ustring &)> ItemList::signal_exclude() {
+    return private_exclude;
+}
+
+void ItemList::on_signal_remove(const Glib::ustring &text) {
+    // find tag widget
+    size_t idx;
+    for (idx = 0; idx < widgets.size(); idx++) {
+        if (static_cast<ItemInQuery *>(widgets[idx].get())->get_text() == text ) {
+            break;
+        }
+    }
+
+    // remove the widget from the box
+    box.remove(*(widgets[idx].get()));
+
+    // also remove it from the owning vector
+    widgets.erase(widgets.begin() + idx);
+
     // remove the item's text from the text based database
-    items.erase(item->get_text());
-
-    // also remove the associated widget
-    widgets.remove(*item);
-
-    // free the memory of the widget, since
-    // it is no longer managed by the box
-    // and it's not needed anymore
-    delete item;
+    items.erase(text);
 
     private_contents_changed.emit(items);
 }
 
+void ItemList::on_signal_add(const Glib::ustring &text) {
+    private_add.emit(text);
+}
+
+void ItemList::on_signal_exclude(const Glib::ustring &text) {
+    private_exclude.emit(text);
+}
+
 // TagPickerBase implementation
 TagPickerBase::TagPickerBase(Glib::ustring title)
-    : allow_create_new_tag(true)
+:
+    tags(ItemList::Type::INSIDE),
+    allow_create_new_tag(true)
 {
     // setup smart pointers with data
     completer = Gtk::EntryCompletion::create();
     completer_list = Gtk::ListStore::create(list_model);
 
     // configure completion
-    entry.set_margin(15);
     entry.set_completion(completer);
     completer->set_model(completer_list);
     completer->set_text_column(list_model.tag);
@@ -179,21 +211,16 @@ TagPickerBase::TagPickerBase(Glib::ustring title)
     g_signal_connect(entry.gobj(), "activate", G_CALLBACK(tag_editor_on_entry_activate), this);
 
     // label setup
-    lbl_title.set_markup("<span weight=\"bold\" size=\"large\">" + title + "</span>");
-    lbl_title.set_margin_top(15);
-    lbl_title.set_margin_bottom(15);
+    lbl_tags.set_markup("<span weight=\"bold\" size=\"large\">" + title + "</span>");
 
     // box setup (self)
     append(entry);
-    append(lbl_title);
+    append(lbl_tags);
     append(tags);
 
     set_orientation(Gtk::Orientation::VERTICAL);
+    set_spacing(30);
     set_hexpand(false);
-}
-
-const std::set<Glib::ustring> &TagPickerBase::get_content() const {
-    return tags.get_content();
 }
 
 void TagPickerBase::set_completer_data(const std::set<Glib::ustring> &completer_tags) {
@@ -202,7 +229,7 @@ void TagPickerBase::set_completer_data(const std::set<Glib::ustring> &completer_
     for (const Glib::ustring &tag : completer_tags) {
         auto row = *(completer_list->append());
         row[list_model.tag] = tag;
-        tags_all.push_back(tag);
+        tags_all.insert(tag);
     }
 }
 
@@ -245,7 +272,7 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
 }
 
 void TagPickerBase::add_tag(const Glib::ustring &tag) {
-    tags.append(tag);
+    tags.append_and_notify(tag);
 }
 
 bool TagPickerBase::on_match_selected(const Gtk::TreeModel::iterator &iter) {

@@ -39,7 +39,10 @@ src_files = files(
                  # sections in the Tag Picker. Tags are derived from
                  # GtkBox and typically contain a label with the tag's
                  # name and buttons for actions such as add or exclude.
-                 'tagutil.cc',
+                 # It also contains implementation of a dynamic list
+                 # of tags as widgets and a base class for tag pickers
+                 # to build on
+                 'tagutils.cc',
 
                  # The database in the backend. It can load from a file
                  # as well as write to a file and it is responsible for

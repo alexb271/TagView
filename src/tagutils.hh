@@ -2,7 +2,7 @@
 // standard library
 #include <vector>
 #include <set>
-#include <type_traits>
+#include <memory>
 
 // gtkmm
 #include <gtkmm/box.h>
@@ -21,10 +21,10 @@
 // and exclude from a search in the database
 class TagQuery {
     public:
-        TagQuery(std::vector<Glib::ustring> tags_to_include,
-                 std::vector<Glib::ustring> tags_to_exclude);
-        std::vector<Glib::ustring> tags_include;
-        std::vector<Glib::ustring> tags_exclude;
+        TagQuery(std::set<Glib::ustring> tags_to_include,
+                 std::set<Glib::ustring> tags_to_exclude);
+        std::set<Glib::ustring> tags_include;
+        std::set<Glib::ustring> tags_exclude;
 };
 
 // class to be placed in a vertical Gtk::Box showing tags
@@ -48,8 +48,7 @@ class ItemInQuery : public Gtk::Box {
 // These tags can either be added to or excluded from the query.
 class ItemOutsideQuery : public Gtk::Box {
     public:
-        ItemOutsideQuery(bool exclude_button = false);
-        ItemOutsideQuery(const Glib::ustring &tag_name, bool exclude_button = true);
+        ItemOutsideQuery(const Glib::ustring &tag_name, bool exclude_button = false);
         void set_tag(const Glib::ustring &tag);
         Glib::ustring get_text() const;
         Glib::SignalProxy<void()> signal_add();
@@ -61,23 +60,38 @@ class ItemOutsideQuery : public Gtk::Box {
         Gtk::Button exclude;
 };
 
-// class to hold a dynamic list of ItemInQuery widgets
-class ItemInQueryList : public Gtk::ScrolledWindow {
+// class to hold a dynamic list of ItemInQuery or ItemOutsideQuery widgets
+class ItemList : public Gtk::ScrolledWindow {
+    public: enum class Type { INSIDE, OUTSIDE, OUTSIDE_WITH_EXCLUDE };
     public:
-        ItemInQueryList();
+        ItemList(Type type);
 
         void append(const Glib::ustring &text);
+        void append_and_notify(const Glib::ustring &text);
         void clear();
         const std::set<Glib::ustring> &get_content() const;
+
+        // signal forwarding
         sigc::signal<void (const std::set<Glib::ustring> &)> signal_contents_changed();
+        sigc::signal<void (const Glib::ustring &)> signal_add();
+        sigc::signal<void (const Glib::ustring &)> signal_exclude();
+
 
     private:
-        Gtk::Box widgets;
+        Type type;
+        Gtk::Box box;
+        std::vector<std::unique_ptr<Gtk::Widget>> widgets;
         std::set<Glib::ustring> items;
+
         sigc::signal<void (const std::set<Glib::ustring> &)> private_contents_changed;
+        sigc::signal<void (const Glib::ustring &)> private_add;
+        sigc::signal<void (const Glib::ustring &)> private_exclude;
 
         // signal handlers
-        void on_signal_remove(ItemInQuery *item);
+        void on_signal_remove(const Glib::ustring &text);
+        void on_signal_add(const Glib::ustring &text);
+        void on_signal_exclude(const Glib::ustring &text);
+        void on_test();
 };
 
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
@@ -86,7 +100,6 @@ class TagPickerBase : public Gtk::Box {
     public:
         TagPickerBase(Glib::ustring title);
 
-        const std::set<Glib::ustring> &get_content() const;
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
         void set_allow_create_new_tag(bool allow_create_new_tag);
         bool get_allow_create_new_tag() const;
@@ -96,9 +109,9 @@ class TagPickerBase : public Gtk::Box {
 
     protected:
         // tags
-        std::vector<Glib::ustring> tags_all;
-        ItemInQueryList tags;
-        Gtk::Label lbl_title;
+        std::set<Glib::ustring> tags_all;
+        ItemList tags;
+        Gtk::Label lbl_tags;
 
         // functions
         void add_tag(const Glib::ustring &tag);

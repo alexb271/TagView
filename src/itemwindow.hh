@@ -1,3 +1,4 @@
+# pragma once
 // standard library
 #include <vector>
 
@@ -8,7 +9,7 @@
 #include <gtkmm/label.h>
 
 // project
-#include "tagutil.hh"
+#include "tagutils.hh"
 
 class ItemWindow : public Gtk::Window {
     public:

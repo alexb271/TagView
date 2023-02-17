@@ -51,7 +51,7 @@ bool TagDb::Item::is_tagged(const Glib::ustring &tag) const {
     return tags.count(tag);
 }
 
-bool TagDb::Item::is_tagged(const std::vector<Glib::ustring> &tags) const {
+bool TagDb::Item::is_tagged(const std::set<Glib::ustring> &tags) const {
         for (Glib::ustring tag : tags) {
             if (is_tagged(tag)) {
                 return true;
@@ -250,8 +250,8 @@ const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &fil
     throw ItemNotFoundException(file_path);
 }
 
-std::vector<Glib::ustring> TagDb::query(const std::vector<Glib::ustring> &tags_include,
-                                        const std::vector<Glib::ustring> &tags_exclude) const
+std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_include,
+                                        const std::set<Glib::ustring> &tags_exclude) const
 {
     std::vector<Glib::ustring> result;
     std::vector<const TagDb::Item *> result_items;

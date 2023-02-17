@@ -27,7 +27,7 @@ class TagDb {
             void add_tag(const Glib::ustring &tag);
             void remove_tag(const Glib::ustring &tag);
             bool is_tagged(const Glib::ustring &tag) const;
-            bool is_tagged(const std::vector<Glib::ustring> &tags) const;
+            bool is_tagged(const std::set<Glib::ustring> &tags) const;
             const std::set<Glib::ustring> &get_tags() const;
 
             bool is_favorite() const;
@@ -72,8 +72,8 @@ class TagDb {
         std::set<Glib::ustring> get_all_tags() const;
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path);
 
-        std::vector<Glib::ustring> query(const std::vector<Glib::ustring> &tags_include,
-                                         const std::vector<Glib::ustring> &tags_exclude) const;
+        std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
+                                         const std::set<Glib::ustring> &tags_exclude) const;
 
         std::vector<Glib::ustring> top_tags(const std::vector<Glib::ustring> &tags_include,
                                             const std::vector<Glib::ustring> &tags_exclude,

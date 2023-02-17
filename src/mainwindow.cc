@@ -1,7 +1,3 @@
-// gtkmm
-#include "gtkmm/enums.h"
-#include "sigc++/functors/mem_fun.h"
-
 // project
 #include "mainwindow.hh"
 
