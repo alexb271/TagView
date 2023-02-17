@@ -8,6 +8,7 @@
 #include <gtkmm/popover.h>
 #include <gtkmm/box.h>
 #include <gtkmm/separator.h>
+#include <gtkmm/liststore.h>
 #include <gtkmm/eventcontrollerkey.h>
 #include <glibmm/ustring.h>
 
@@ -27,6 +28,10 @@ class MainWindow : public Gtk::ApplicationWindow {
         ~MainWindow() override;
 
     private:
+        // members for providing entry completion
+        Glib::RefPtr<Gtk::ListStore> list_store;
+        TagPickerBase::ListModel list_model;
+
         // custom widgets
         ImageViewer viewer;
         PreviewGallery gallery;
@@ -57,13 +62,15 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // fucntions
         void load_database();
+        void set_completer_data(const std::set<Glib::ustring> &completer_tags);
 
         // signal handlers
-        void on_tag_picker_toggled();
         void on_tag_query_changed(TagQuery tag_selection);
-        void on_item_chosen(size_t id);
-        void on_item_selected(size_t id);
+        void on_gallery_item_chosen(size_t id);
+        void on_gallery_item_selected(size_t id);
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
+        void on_add_item();
+        void on_tag_picker_toggled();
         void on_hide_viewer();
         void on_test();
 };

@@ -3,13 +3,14 @@
 
 ItemWindow::ItemWindow()
 :
-    label("Add Item Window"),
-    tag_editor("Tags")
+    label("Add Item Window")
 {
+
     // tag editor setup
-   tag_editor.set_hexpand(false);
-   tag_editor.set_halign(Gtk::Align::START);
-   tag_editor.set_valign(Gtk::Align::START);
+    tag_editor.set_hexpand(false);
+    tag_editor.set_halign(Gtk::Align::START);
+    tag_editor.set_valign(Gtk::Align::START);
+    tag_editor.set_label_markup("<span weight=\"bold\" size=\"large\">Tags</span>");
 
     // box setup
     box.set_margin(15);
@@ -31,8 +32,8 @@ ItemWindow::ItemWindow()
     set_default_size(400, 600);
 }
 
-void ItemWindow::set_completer_data(const std::set<Glib::ustring> &completer_tags) {
-    tag_editor.set_completer_data(completer_tags);
+void ItemWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
+    tag_editor.set_completer_model(completer_list);
 }
 
 bool ItemWindow::on_close_request() {

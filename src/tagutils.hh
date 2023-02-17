@@ -97,19 +97,28 @@ class ItemList : public Gtk::ScrolledWindow {
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
 
 class TagPickerBase : public Gtk::Box {
-    public:
-        TagPickerBase(Glib::ustring title);
+    // liststore model
+    public: class ListModel : public Gtk::TreeModelColumnRecord {
+        public:
+            ListModel() {
+                add(tag);
+            }
+            Gtk::TreeModelColumn<Glib::ustring> tag;
+    };
 
-        void set_completer_data(const std::set<Glib::ustring> &completer_tags);
+    public:
+        TagPickerBase();
+
+        void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void set_allow_create_new_tag(bool allow_create_new_tag);
         bool get_allow_create_new_tag() const;
+        void set_label_markup(const Glib::ustring &markup);
 
         // C signal handler friend function
         friend void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
 
     protected:
         // tags
-        std::set<Glib::ustring> tags_all;
         ItemList tags;
         Gtk::Label lbl_tags;
 
@@ -117,19 +126,9 @@ class TagPickerBase : public Gtk::Box {
         void add_tag(const Glib::ustring &tag);
 
     private:
-        // liststore model
-        class ListModel : public Gtk::TreeModelColumnRecord {
-            public:
-                ListModel() {
-                    add(tag);
-                }
-                Gtk::TreeModelColumn<Glib::ustring> tag;
-        };
-
         // entry with completion
         Gtk::Entry entry;
         Glib::RefPtr<Gtk::EntryCompletion> completer;
-        Glib::RefPtr<Gtk::ListStore> completer_list;
         ListModel list_model;
 
         // bool whether creating new tags is allowed with this widget

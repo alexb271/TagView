@@ -136,12 +136,10 @@ void ItemList::append_and_notify(const Glib::ustring &text) {
 }
 void ItemList::clear() {
     items.clear();
-    widgets.clear();
-    Gtk::Widget *item = box.get_first_child();
-    while(item) {
+    for (std::unique_ptr<Gtk::Widget> &item : widgets) {
         box.remove(*item);
-        item = box.get_first_child();
     }
+    widgets.clear();
 }
 
 const std::set<Glib::ustring> &ItemList::get_content() const {
@@ -190,18 +188,16 @@ void ItemList::on_signal_exclude(const Glib::ustring &text) {
 }
 
 // TagPickerBase implementation
-TagPickerBase::TagPickerBase(Glib::ustring title)
+TagPickerBase::TagPickerBase()
 :
     tags(ItemList::Type::INSIDE),
     allow_create_new_tag(true)
 {
     // setup smart pointers with data
     completer = Gtk::EntryCompletion::create();
-    completer_list = Gtk::ListStore::create(list_model);
 
     // configure completion
     entry.set_completion(completer);
-    completer->set_model(completer_list);
     completer->set_text_column(list_model.tag);
     completer->set_match_func(sigc::mem_fun(*this, &TagPickerBase::on_completion_match));
     completer->signal_match_selected().connect(
@@ -209,9 +205,6 @@ TagPickerBase::TagPickerBase(Glib::ustring title)
 
     // the entry's activate signal is not implemented in glibmm 4.6, use C API instead
     g_signal_connect(entry.gobj(), "activate", G_CALLBACK(tag_editor_on_entry_activate), this);
-
-    // label setup
-    lbl_tags.set_markup("<span weight=\"bold\" size=\"large\">" + title + "</span>");
 
     // box setup (self)
     append(entry);
@@ -223,14 +216,8 @@ TagPickerBase::TagPickerBase(Glib::ustring title)
     set_hexpand(false);
 }
 
-void TagPickerBase::set_completer_data(const std::set<Glib::ustring> &completer_tags) {
-    completer_list->clear();
-    tags_all.clear();
-    for (const Glib::ustring &tag : completer_tags) {
-        auto row = *(completer_list->append());
-        row[list_model.tag] = tag;
-        tags_all.insert(tag);
-    }
+void TagPickerBase::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
+    completer->set_model(completer_list);
 }
 
 void TagPickerBase::set_allow_create_new_tag(bool allow_create_new_tag) {
@@ -241,10 +228,14 @@ bool TagPickerBase::get_allow_create_new_tag() const {
     return allow_create_new_tag;
 }
 
+void TagPickerBase::set_label_markup(const Glib::ustring &markup) {
+    lbl_tags.set_markup(markup);
+}
+
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
-    // passed data is the TagEditor instance
+    // passed data is the TagPicker instance
     // that the entry is part of
-    TagPickerBase *tag_editor = (TagPickerBase*)data;
+    TagPickerBase *tag_picker = (TagPickerBase*)data;
 
     // get a gtkmm C++ wrapper around c_entry
     Gtk::Entry *entry = Glib::wrap(c_entry);
@@ -253,16 +244,16 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
     Glib::ustring text = entry->get_text();
 
     // if entering new tags is allowed, simply add it
-    if (tag_editor->allow_create_new_tag) {
-        tag_editor->add_tag(text);
+    if (tag_picker->allow_create_new_tag) {
+        tag_picker->add_tag(text);
         entry->get_buffer()->delete_text(0, -1);
     }
     // else search tag database for a match on text first
     else {
-        for (Glib::ustring tag : tag_editor->tags_all) {
-            if (text == tag) {
+        for (auto item : tag_picker->completer->get_model()->children()) {
+            if (text == item.get_value(tag_picker->list_model.tag)) {
                 // in case of a match add it to included tags
-                tag_editor->add_tag(text);
+                tag_picker->add_tag(text);
 
                 //clear the entry's text buffer
                 entry->get_buffer()->delete_text(0, -1);
@@ -293,9 +284,8 @@ bool TagPickerBase::on_match_selected(const Gtk::TreeModel::iterator &iter) {
 }
 
 bool TagPickerBase::on_completion_match(const Glib::ustring &key,
-                                    const Gtk::TreeModel::const_iterator &iter) {
-    const auto row = *iter;
-    Glib::ustring filter_str = row[list_model.tag];
+                                        const Gtk::TreeModel::const_iterator &iter) {
+    Glib::ustring filter_str = iter->get_value(list_model.tag);
 
     if (filter_str.lowercase().find(key.lowercase()) != Glib::ustring::npos) {
         return true;

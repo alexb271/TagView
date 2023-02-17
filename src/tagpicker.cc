@@ -3,7 +3,6 @@
 
 TagPicker::TagPicker()
 :
-    TagPickerBase("Include"),
     tags_exclude(ItemList::Type::INSIDE),
     tags_current_item(ItemList::Type::OUTSIDE_WITH_EXCLUDE)
 {
@@ -18,6 +17,7 @@ TagPicker::TagPicker()
             sigc::mem_fun(*this, &TagPicker::on_signal_exclude));
 
     // label setup
+    lbl_tags.set_markup("<span weight=\"bold\" size=\"large\">Include</span>");
     lbl_tags_exclude.set_markup("<span weight=\"bold\" size=\"large\">Exclude</span>");
     lbl_tags_current_item.set_markup("<span weight=\"bold\" size=\"large\">Image tags</span>");
 

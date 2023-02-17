@@ -7,6 +7,7 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
+#include <gtkmm/liststore.h>
 
 // project
 #include "tagutils.hh"
@@ -14,7 +15,7 @@
 class ItemWindow : public Gtk::Window {
     public:
         ItemWindow();
-        void set_completer_data(const std::set<Glib::ustring> &completer_tags);
+        void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
 
     private:
         Gtk::Label label;
