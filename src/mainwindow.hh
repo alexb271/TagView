@@ -57,6 +57,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // dialogs
         std::unique_ptr<Gtk::MessageDialog> message;
+        std::unique_ptr<Gtk::FileChooserDialog> file_chooser;
 
         // main regular widgets
         Gtk::Box box;
@@ -70,19 +71,37 @@ class MainWindow : public Gtk::ApplicationWindow {
         size_t files_idx;
 
         // fucntions
-        void load_database();
+        void load_database(std::string db_file_path);
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
         void show_warning(Glib::ustring primary, Glib::ustring secondary);
 
         // signal handlers
+        bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
+
+        // tag picker
         void on_tag_query_changed(TagQuery tag_selection);
         void on_reload_default_exclude_required();
+
+        // gallery
         void on_gallery_item_chosen(size_t id);
         void on_gallery_item_selected(size_t id);
-        bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
+
+        // image viewer
+        void on_hide_viewer();
+
+        // main menu
+        void on_load_database();
         void on_add_item();
         void on_db_settings();
         void on_tag_picker_toggled();
-        void on_hide_viewer();
+
+        // db settings window
+        void on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_tags);
+        void on_directories_changed(const std::set<Glib::ustring> &directories);
+
+        // dialog responses
+        void on_file_chooser_response(int respone_id);
+
+        // other
         void on_test();
 };

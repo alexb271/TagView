@@ -209,12 +209,12 @@ void TagDb::load_from_file(Glib::ustring db_file_path) {
         }
 
         else if (str_starts_with(line, "[dir]")) {
-            db_directories.insert(line.substr(5));
+            directories.insert(line.substr(5));
         }
 
         else if (str_starts_with(line, "[exclude]")) {
             for (const Glib::ustring &tag : parse_tags(line.substr(9))) {
-                db_default_excluded_tags.insert(tag);
+                default_excluded_tags.insert(tag);
             }
         }
 
@@ -240,16 +240,16 @@ void TagDb::write_to_file() const {
 
     output << "[TagView database file]" << std::endl << std::endl;
 
-    for (const Glib::ustring &dir : db_directories) {
+    for (const Glib::ustring &dir : directories) {
         output << "[dir]" << dir << std::endl;
     }
 
     output << "[exclude]";
-    for (const Glib::ustring &tag : db_default_excluded_tags) {
+    for (const Glib::ustring &tag : default_excluded_tags) {
         output << tag.raw() << ' ';
     }
 
-    output << std::endl;
+    output << std::endl << std::endl;
 
     for (const TagDb::Item &item : items) {
         output << item;
@@ -271,16 +271,20 @@ std::set<Glib::ustring> TagDb::get_all_tags() const {
 }
 
 const std::set<Glib::ustring> &TagDb::get_default_excluded_tags() const {
-    return db_default_excluded_tags;
+    return default_excluded_tags;
 }
 
-const std::set<Glib::ustring> &TagDb::get_all_directories() const {
-    return db_directories;
+const std::set<Glib::ustring> &TagDb::get_directories() const {
+    return directories;
+}
+
+const Glib::ustring &TagDb::get_prefix() const {
+    return prefix;
 }
 
 const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &file_path) {
     // remove the prefix from the argument
-    Glib::ustring rel_path = file_path.substr(file_path.find_last_of("/") + 1);
+    Glib::ustring rel_path = file_path.substr(prefix.size());
 
     for (const TagDb::Item &item : items) {
         if (item.get_file_path() == rel_path) {
@@ -288,6 +292,16 @@ const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &fil
         }
     }
     throw ItemNotFoundException(file_path);
+}
+
+void TagDb::set_directories(const std::set<Glib::ustring> &dirs) {
+    directories = dirs;
+    write_to_file();
+}
+
+void TagDb::set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags) {
+    default_excluded_tags = exclude_tags;
+    write_to_file();
 }
 
 std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_include,

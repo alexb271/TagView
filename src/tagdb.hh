@@ -80,8 +80,12 @@ class TagDb {
 
         std::set<Glib::ustring> get_all_tags() const;
         const std::set<Glib::ustring> &get_default_excluded_tags() const;
-        const std::set<Glib::ustring> &get_all_directories() const;
+        const std::set<Glib::ustring> &get_directories() const;
+        const Glib::ustring &get_prefix() const;
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path);
+
+        void set_directories(const std::set<Glib::ustring> &dirs);
+        void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
 
         std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
@@ -94,8 +98,8 @@ class TagDb {
         Glib::ustring db_file_path;
         Glib::ustring prefix;
         std::vector<Item> items;
-        std::set<Glib::ustring> db_directories;
-        std::set<Glib::ustring> db_default_excluded_tags;
+        std::set<Glib::ustring> directories;
+        std::set<Glib::ustring> default_excluded_tags;
 
         // functions
         bool str_starts_with(const std::string &str, const std::string &argument);

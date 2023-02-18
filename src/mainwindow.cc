@@ -2,6 +2,7 @@
 #include <gtkmm/messagedialog.h>
 
 // project
+#include "gtkmm/dialog.h"
 #include "gtkmm/enums.h"
 #include "mainwindow.hh"
 
@@ -23,7 +24,7 @@ MainWindow::MainWindow()
     // configure main menu
     button_main_menu.set_direction(Gtk::ArrowType::NONE);
     button_main_menu.set_popover(main_menu);
-    main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::load_database));
+    main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::on_load_database));
     main_menu.signal_add_item().connect(sigc::mem_fun(*this, &MainWindow::on_add_item));
     main_menu.signal_db_settings().connect(sigc::mem_fun(*this, &MainWindow::on_db_settings));
     main_menu.signal_show_tag_picker_toggled().connect(
@@ -70,6 +71,10 @@ MainWindow::MainWindow()
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
+    db_settings_window.signal_directoires_changed().connect(
+            sigc::mem_fun(*this, &MainWindow::on_directories_changed));
+    db_settings_window.signal_exclude_tags_changed().connect(
+            sigc::mem_fun(*this, &MainWindow::on_exclude_tags_changed));
 
     // configure window
     set_child(box);
@@ -78,10 +83,10 @@ MainWindow::MainWindow()
     set_default_size(950, 800);
 }
 
-void MainWindow::load_database() {
+void MainWindow::load_database(std::string db_file_path) {
     main_menu.hide();
     try {
-        db.load_from_file("../TestGallery/database.txt");
+        db.load_from_file(db_file_path);
     }
     catch (TagDb::FileParseException &ex) {
         show_warning("Error Loading Database",
@@ -97,7 +102,7 @@ void MainWindow::load_database() {
 
     set_completer_data(db.get_all_tags());
     on_reload_default_exclude_required(); // load default excluded tags to tag_picer
-    db_settings_window.reset(db.get_all_directories(), db.get_default_excluded_tags());
+    db_settings_window.reset(db.get_directories(), db.get_default_excluded_tags(), db.get_prefix());
     main_menu.set_show_database_controls(true);
 }
 
@@ -118,6 +123,30 @@ void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->signal_response().connect(
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
         message->show();
+}
+
+bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state) {
+    if (viewer.get_visible()) {
+        if (keycode == 9) { // escape key
+            on_hide_viewer();
+        }
+        else if (keycode == 113) { // left arrow key
+            // go previous
+            if (files_idx == 0) { files_idx = files.size() - 1; }
+            else { files_idx -= 1; }
+            viewer.set_image(files.at(files_idx));
+            on_gallery_item_selected(files_idx);
+        }
+        else if (keycode == 114) { // right arrow key
+            // go next
+            if (files_idx == files.size() - 1) { files_idx = 0; }
+            else { files_idx += 1; }
+            viewer.set_image(files.at(files_idx));
+            on_gallery_item_selected(files_idx);
+        }
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
@@ -152,28 +181,38 @@ void MainWindow::on_gallery_item_selected(size_t id) {
     tag_picker.set_current_item_tags(db.get_tags_for_item(files.at(id)));
 }
 
-bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state) {
-    if (viewer.get_visible()) {
-        if (keycode == 9) { // escape key
-            on_hide_viewer();
-        }
-        else if (keycode == 113) { // left arrow key
-            // go previous
-            if (files_idx == 0) { files_idx = files.size() - 1; }
-            else { files_idx -= 1; }
-            viewer.set_image(files.at(files_idx));
-            on_gallery_item_selected(files_idx);
-        }
-        else if (keycode == 114) { // right arrow key
-            // go next
-            if (files_idx == files.size() - 1) { files_idx = 0; }
-            else { files_idx += 1; }
-            viewer.set_image(files.at(files_idx));
-            on_gallery_item_selected(files_idx);
-        }
-        return true;
+void MainWindow::on_hide_viewer() {
+    TagQuery query = tag_picker.get_current_query();
+    if (query.tags_include.size() == 0) {
+        tag_picker.clear_current_item_tags();
     }
-    return false;
+
+    viewer.set_visible(false);
+    viewer_controls.set_visible(false);
+    gallery.set_visible(true);
+    gallery.grab_focus();
+}
+
+void MainWindow::on_load_database() {
+    main_menu.hide();
+
+    file_chooser = std::make_unique<Gtk::FileChooserDialog>("Choose a database file",
+            Gtk::FileChooser::Action::OPEN, true);
+    file_chooser->set_transient_for(*this);
+    file_chooser->set_modal(true);
+
+    file_chooser->add_button("Cancel", Gtk::ResponseType::CANCEL);
+    file_chooser->add_button("Select", Gtk::ResponseType::OK);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name("Text files");
+    filter->add_mime_type("text/plain");
+    file_chooser->add_filter(filter);
+
+    file_chooser->signal_response().connect(
+            sigc::mem_fun(*this, &MainWindow::on_file_chooser_response));
+
+    file_chooser->show();
 }
 
 void MainWindow::on_add_item() {
@@ -195,16 +234,19 @@ void MainWindow::on_tag_picker_toggled() {
     }
 }
 
-void MainWindow::on_hide_viewer() {
-    TagQuery query = tag_picker.get_current_query();
-    if (query.tags_include.size() == 0) {
-        tag_picker.clear_current_item_tags();
-    }
+void MainWindow::on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_tags) {
+    db.set_default_excluded_tags(exclude_tags);
+}
 
-    viewer.set_visible(false);
-    viewer_controls.set_visible(false);
-    gallery.set_visible(true);
-    gallery.grab_focus();
+void MainWindow::on_directories_changed(const std::set<Glib::ustring> &directories) {
+    db.set_directories(directories);
+}
+
+void MainWindow::on_file_chooser_response(int respone_id) {
+    file_chooser->hide();
+    if (respone_id == Gtk::ResponseType::OK) {
+        load_database(file_chooser->get_file()->get_path());
+    }
 }
 
 void MainWindow::on_test() {

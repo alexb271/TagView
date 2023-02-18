@@ -1,11 +1,15 @@
 #pragma once
 
+// standard library
+#include <memory>
+
 // gtkmm
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
 #include <gtkmm/label.h>
-#include <gtkmm/comboboxtext.h>
+#include <gtkmm/messagedialog.h>
+#include <gtkmm/filechooserdialog.h>
 
 // project
 #include "tagutils.hh"
@@ -16,7 +20,10 @@ class DbSettingsWindow : public Gtk::Window {
 
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void reset(const std::set<Glib::ustring> &directories,
-                   const std::set<Glib::ustring> &default_exclude_tags);
+                   const std::set<Glib::ustring> &default_exclude_tags,
+                   const Glib::ustring &prefix);
+        sigc::signal<void (const std::set<Glib::ustring> &)> signal_exclude_tags_changed();
+        sigc::signal<void (const std::set<Glib::ustring> &)> signal_directoires_changed();
 
     private:
         // widgets
@@ -27,8 +34,17 @@ class DbSettingsWindow : public Gtk::Window {
         Gtk::Label lbl_default_exclude;
         TagPickerBase tp_exclude;
 
+        // members for adding directories
+        std::unique_ptr<Gtk::MessageDialog> subdir_warning;
+        std::unique_ptr<Gtk::FileChooserDialog> file_chooser;
+        Glib::ustring prefix;
+
         // signal handlers
         bool on_close_request() override;
-        void on_dirs_changed(const std::set<Glib::ustring> &dirs);
-        void on_tags_changed(const std::set<Glib::ustring> &dirs);
+        void on_add_directory();
+        void on_file_chooser_response(int respone_id);
+
+        // signals
+        sigc::signal<void (const std::set<Glib::ustring> &)> private_exclude_tags_changed;
+        sigc::signal<void (const std::set<Glib::ustring> &)> private_directoires_changed;
 };

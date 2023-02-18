@@ -1,7 +1,7 @@
 [TagView database file]
 
 [dir]red
-[exclude]group_member
+[exclude]group_member 
 
 [item]
 [path]blue.png
@@ -16,9 +16,9 @@
 [fave]no
 
 [item]
-[path]blue_red.png
+[path]red/blue_red.png
 [type]image
-[tags]blue red
+[tags]blue red 
 [fave]no
 
 [item]
@@ -28,19 +28,20 @@
 [fave]no
 
 [item]
-[path]green_red.png
+[path]red/green_red.png
 [type]image
 [tags]green red 
 [fave]no
 
 [item]
-[path]red.png
+[path]red/red.png
 [type]image
-[tags]red
+[tags]red 
 [fave]no
 
 [item]
-[path]red_blue_green.png
+[path]red/red_blue_green.png
 [type]image
-[tags]red blue green 
+[tags]blue green red 
 [fave]yes
+
