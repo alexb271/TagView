@@ -46,6 +46,8 @@ MainWindow::MainWindow()
     tag_picker.set_margin(15);
     tag_picker.signal_query_changed().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_query_changed));
+    tag_picker.signal_reload_default_exclude_required().connect(
+            sigc::mem_fun(*this, &MainWindow::on_reload_default_exclude_required));
 
     // configure preview gallery
     gallery.signal_item_chosen().connect(sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
@@ -94,6 +96,7 @@ void MainWindow::load_database() {
     }
 
     set_completer_data(db.get_all_tags());
+    on_reload_default_exclude_required(); // load default excluded tags to tag_picer
     db_settings_window.reset(db.get_all_directories(), db.get_default_excluded_tags());
     main_menu.set_show_database_controls(true);
 }
@@ -122,6 +125,12 @@ void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
     gallery.set_content(files);
     if (!viewer.get_visible()) {
         tag_picker.clear_current_item_tags();
+    }
+}
+
+void MainWindow::on_reload_default_exclude_required() {
+    for (const Glib::ustring &tag : db.get_default_excluded_tags()) {
+        tag_picker.add_excluded_tag(tag);
     }
 }
 

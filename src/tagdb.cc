@@ -4,9 +4,6 @@
 // project
 #include "tagdb.hh"
 
-// debug includes
-#include <iostream>
-
 // TagDb::Item implementation
 TagDb::Item::Item(const Glib::ustring &file_path, const Type &type)
 :

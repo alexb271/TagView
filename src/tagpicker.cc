@@ -21,8 +21,13 @@ TagPicker::TagPicker()
     lbl_tags_exclude.set_markup("<span weight=\"bold\" size=\"large\">Exclude</span>");
     lbl_tags_current_item.set_markup("<span weight=\"bold\" size=\"large\">Image tags</span>");
 
+    // button setup
+    btn_reload_default_exclude.set_icon_name("view-refresh-symbolic");
+    btn_reload_default_exclude.set_halign(Gtk::Align::CENTER);
+
     append(sep1);
     append(lbl_tags_exclude);
+    append(btn_reload_default_exclude);
     append(tags_exclude);
     append(sep2);
     append(lbl_tags_current_item);
@@ -30,6 +35,15 @@ TagPicker::TagPicker()
 
     set_allow_create_new_tag(false);
 }
+
+TagQuery TagPicker::get_current_query() const {
+    return TagQuery(tags.get_content(), tags_exclude.get_content());
+}
+
+void TagPicker::add_excluded_tag(const Glib::ustring &tag) {
+    tags_exclude.append(tag);
+}
+
 void TagPicker::set_current_item_tags(const std::set<Glib::ustring> &tags) {
     tags_current_item.clear();
     for (const Glib::ustring &tag : tags) {
@@ -41,12 +55,12 @@ void TagPicker::clear_current_item_tags() {
     tags_current_item.clear();
 }
 
-TagQuery TagPicker::get_current_query() const {
-    return TagQuery(tags.get_content(), tags_exclude.get_content());
-}
-
 sigc::signal<void (TagQuery)> TagPicker::signal_query_changed() {
     return private_query_changed;
+}
+
+Glib::SignalProxy<void ()> TagPicker::signal_reload_default_exclude_required() {
+    return btn_reload_default_exclude.signal_clicked();
 }
 
 void TagPicker::on_signal_add(const Glib::ustring &tag) {

@@ -76,6 +76,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // signal handlers
         void on_tag_query_changed(TagQuery tag_selection);
+        void on_reload_default_exclude_required();
         void on_gallery_item_chosen(size_t id);
         void on_gallery_item_selected(size_t id);
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
