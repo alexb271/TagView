@@ -81,6 +81,7 @@ class TagDb {
     private:
         // member variables
         Glib::ustring db_file_path;
+        Glib::ustring prefix;
         std::vector<Item> items;
 
         // functions

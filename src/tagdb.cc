@@ -117,6 +117,9 @@ void TagDb::load_from_file(Glib::ustring db_file_path) {
     // store file path
     this->db_file_path = db_file_path;
 
+    // set the prefix to the directory that the file is located in
+    prefix = db_file_path.substr(0, db_file_path.find_last_of("/") + 1);
+
     // clear any current items
     items.clear();
 
@@ -242,8 +245,11 @@ std::set<Glib::ustring> TagDb::get_all_tags() const {
 }
 
 const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &file_path) {
+    // remove the prefix from the argument
+    Glib::ustring rel_path = file_path.substr(file_path.find_last_of("/") + 1);
+
     for (const TagDb::Item &item : items) {
-        if (item.get_file_path() == file_path) {
+        if (item.get_file_path() == rel_path) {
             return item.tags;
         }
     }
@@ -279,7 +285,7 @@ std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_incl
               [](const TagDb::Item *a, const TagDb::Item *b){ return (*a) < (*b); });
 
     for (const TagDb::Item *item : result_items) {
-        result.push_back(item->get_file_path());
+        result.push_back(prefix + item->get_file_path());
     }
 
     return result;
