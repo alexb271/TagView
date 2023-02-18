@@ -20,6 +20,7 @@
 #include "mainmenu.hh"
 #include "tagdb.hh"
 #include "itemwindow.hh"
+#include "dbsettingswindow.hh"
 
 class MainWindow : public Gtk::ApplicationWindow {
     public:
@@ -48,6 +49,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // other windows
         ItemWindow add_item_window;
+        DbSettingsWindow db_settings_window;
 
         // main regular widgets
         Gtk::Box box;
@@ -70,6 +72,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_gallery_item_selected(size_t id);
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
         void on_add_item();
+        void on_db_settings();
         void on_tag_picker_toggled();
         void on_hide_viewer();
         void on_test();

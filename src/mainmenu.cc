@@ -10,7 +10,7 @@ MainMenu::MainMenu()
     button_create_database("Create Database"),
     checkbutton_show_tag_picker(" Show Tag Picker"),
     button_add_item("Add Item"),
-    button_default_exclude("Default Exclude"),
+    button_db_settings("DB Settings"),
     button_preferences("Preferences"),
     button_about("About"),
     button_test("Test")
@@ -19,7 +19,7 @@ MainMenu::MainMenu()
     button_load_database.set_has_frame(false);
     button_create_database.set_has_frame(false);
     button_add_item.set_has_frame(false);
-    button_default_exclude.set_has_frame(false);
+    button_db_settings.set_has_frame(false);
     button_preferences.set_has_frame(false);
     button_about.set_has_frame(false);
     checkbutton_show_tag_picker.set_active(true);
@@ -29,7 +29,7 @@ MainMenu::MainMenu()
     // database config options such as add item
     // are hidden until a database is actually loaded
     button_add_item.set_visible(false);
-    button_default_exclude.set_visible(false);
+    button_db_settings.set_visible(false);
     sep_2.set_visible(false);
 
     // box config
@@ -38,7 +38,7 @@ MainMenu::MainMenu()
     box.append(button_create_database);
     box.append(sep_1);
     box.append(button_add_item);
-    box.append(button_default_exclude);
+    box.append(button_db_settings);
     box.append(sep_2);
     box.append(checkbutton_show_tag_picker);
     box.append(button_preferences);
@@ -51,12 +51,12 @@ MainMenu::MainMenu()
 void MainMenu::set_show_database_controls(bool show_controls) {
     if (show_controls) {
         button_add_item.set_visible(true);
-        button_default_exclude.set_visible(true);
+        button_db_settings.set_visible(true);
         sep_2.set_visible(true);
     }
     else {
         button_add_item.set_visible(false);
-        button_default_exclude.set_visible(false);
+        button_db_settings.set_visible(false);
         sep_2.set_visible(false);
     }
 }
@@ -77,8 +77,8 @@ Glib::SignalProxy<void()> MainMenu::signal_add_item() {
     return button_add_item.signal_clicked();
 }
 
-Glib::SignalProxy<void()> MainMenu::signal_default_exclude() {
-    return button_default_exclude.signal_clicked();
+Glib::SignalProxy<void()> MainMenu::signal_db_settings() {
+    return button_db_settings.signal_clicked();
 }
 
 Glib::SignalProxy<void()> MainMenu::signal_show_tag_picker_toggled() {

@@ -21,6 +21,7 @@ MainWindow::MainWindow()
     button_main_menu.set_popover(main_menu);
     main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::load_database));
     main_menu.signal_add_item().connect(sigc::mem_fun(*this, &MainWindow::on_add_item));
+    main_menu.signal_db_settings().connect(sigc::mem_fun(*this, &MainWindow::on_db_settings));
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
     main_menu.signal_test().connect(sigc::mem_fun(*this, &MainWindow::on_test));
@@ -136,6 +137,11 @@ bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType s
 void MainWindow::on_add_item() {
     main_menu.hide();
     add_item_window.show();
+}
+
+void MainWindow::on_db_settings() {
+    main_menu.hide();
+    db_settings_window.show();
 }
 
 void MainWindow::on_tag_picker_toggled() {
