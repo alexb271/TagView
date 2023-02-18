@@ -1,5 +1,8 @@
 [TagView database file]
 
+[dir]red
+[exclude]group_member
+
 [item]
 [path]blue.png
 [type]image

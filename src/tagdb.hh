@@ -53,6 +53,15 @@ class TagDb {
             size_t line_number;
     };
 
+    public: class FileErrorException : public std::exception {
+        public:
+            FileErrorException(Glib::ustring file_path) : file_path(file_path) {}
+            const char *what() const noexcept override {
+                return "Error opening file";
+            }
+            Glib::ustring file_path;
+    };
+
     public: class ItemNotFoundException : public std::exception {
         public:
             ItemNotFoundException(Glib::ustring file_path) : file_path(file_path) {}
@@ -70,6 +79,8 @@ class TagDb {
         void write_to_file() const;
 
         std::set<Glib::ustring> get_all_tags() const;
+        const std::set<Glib::ustring> &get_default_excluded_tags() const;
+        const std::set<Glib::ustring> &get_all_directories() const;
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path);
 
         std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
@@ -83,6 +94,8 @@ class TagDb {
         Glib::ustring db_file_path;
         Glib::ustring prefix;
         std::vector<Item> items;
+        std::set<Glib::ustring> db_directories;
+        std::set<Glib::ustring> db_default_excluded_tags;
 
         // functions
         bool str_starts_with(const std::string &str, const std::string &argument);

@@ -91,7 +91,6 @@ class ItemList : public Gtk::ScrolledWindow {
         void on_signal_remove(const Glib::ustring &text);
         void on_signal_add(const Glib::ustring &text);
         void on_signal_exclude(const Glib::ustring &text);
-        void on_test();
 };
 
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
@@ -109,13 +108,20 @@ class TagPickerBase : public Gtk::Box {
     public:
         TagPickerBase();
 
+        const std::set<Glib::ustring> &get_content() const;
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void set_allow_create_new_tag(bool allow_create_new_tag);
         bool get_allow_create_new_tag() const;
         void set_label_markup(const Glib::ustring &markup);
+        void clear();
+        void clear_text();
+        void add_tag(const Glib::ustring &tag);
 
         // C signal handler friend function
         friend void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
+
+        // signal forwarding
+        sigc::signal<void (const std::set<Glib::ustring> &)> signal_contents_changed();
 
     protected:
         // tags
@@ -123,7 +129,7 @@ class TagPickerBase : public Gtk::Box {
         Gtk::Label lbl_tags;
 
         // functions
-        void add_tag(const Glib::ustring &tag);
+        void add_tag_notify(const Glib::ustring &tag);
 
     private:
         // entry with completion

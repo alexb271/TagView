@@ -1,5 +1,8 @@
 #pragma once
 
+// standard library
+#include <memory>
+
 // gtkmm
 #include <gtkmm/applicationwindow.h>
 #include <gtkmm/headerbar.h>
@@ -10,7 +13,8 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/eventcontrollerkey.h>
-#include <glibmm/ustring.h>
+#include <gtkmm/messagedialog.h>
+#include <gtkmm/filechooserdialog.h>
 
 // project
 #include "imageviewer.hh"
@@ -51,6 +55,9 @@ class MainWindow : public Gtk::ApplicationWindow {
         ItemWindow add_item_window;
         DbSettingsWindow db_settings_window;
 
+        // dialogs
+        std::unique_ptr<Gtk::MessageDialog> message;
+
         // main regular widgets
         Gtk::Box box;
         Gtk::Separator sep;
@@ -65,6 +72,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         // fucntions
         void load_database();
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
+        void show_warning(Glib::ustring primary, Glib::ustring secondary);
 
         // signal handlers
         void on_tag_query_changed(TagQuery tag_selection);

@@ -216,6 +216,10 @@ TagPickerBase::TagPickerBase()
     set_hexpand(false);
 }
 
+const std::set<Glib::ustring> &TagPickerBase::get_content() const {
+    return tags.get_content();
+}
+
 void TagPickerBase::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
     completer->set_model(completer_list);
 }
@@ -232,6 +236,19 @@ void TagPickerBase::set_label_markup(const Glib::ustring &markup) {
     lbl_tags.set_markup(markup);
 }
 
+void TagPickerBase::clear() {
+    tags.clear();
+    clear_text();
+}
+
+void TagPickerBase::clear_text() {
+    entry.get_buffer()->delete_text(0, -1);
+}
+
+void TagPickerBase::add_tag(const Glib::ustring &tag) {
+    tags.append(tag);
+}
+
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
     // passed data is the TagPicker instance
     // that the entry is part of
@@ -245,7 +262,7 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
 
     // if entering new tags is allowed, simply add it
     if (tag_picker->allow_create_new_tag) {
-        tag_picker->add_tag(text);
+        tag_picker->add_tag_notify(text);
         entry->get_buffer()->delete_text(0, -1);
     }
     // else search tag database for a match on text first
@@ -253,7 +270,7 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
         for (auto item : tag_picker->completer->get_model()->children()) {
             if (text == item.get_value(tag_picker->list_model.tag)) {
                 // in case of a match add it to included tags
-                tag_picker->add_tag(text);
+                tag_picker->add_tag_notify(text);
 
                 //clear the entry's text buffer
                 entry->get_buffer()->delete_text(0, -1);
@@ -262,7 +279,11 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
     }
 }
 
-void TagPickerBase::add_tag(const Glib::ustring &tag) {
+sigc::signal<void (const std::set<Glib::ustring> &)> TagPickerBase::signal_contents_changed() {
+    return tags.signal_contents_changed();
+}
+
+void TagPickerBase::add_tag_notify(const Glib::ustring &tag) {
     tags.append_and_notify(tag);
 }
 
@@ -271,7 +292,7 @@ bool TagPickerBase::on_match_selected(const Gtk::TreeModel::iterator &iter) {
     Glib::ustring tag = (*iter)[list_model.tag];
 
     // add the tag to the string based vector and the display box
-    add_tag(tag);
+    add_tag_notify(tag);
 
     // clear the entry's text buffer
     entry.get_buffer()->delete_text(0, -1);

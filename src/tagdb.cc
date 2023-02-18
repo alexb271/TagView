@@ -114,6 +114,14 @@ TagDb::TagDb()
 {}
 
 void TagDb::load_from_file(Glib::ustring db_file_path) {
+    // variables for reading from file
+    std::string line;
+    std::ifstream input(db_file_path);
+
+    if (!input.good()) {
+        throw FileErrorException(db_file_path);
+    }
+
     // store file path
     this->db_file_path = db_file_path;
 
@@ -128,10 +136,6 @@ void TagDb::load_from_file(Glib::ustring db_file_path) {
     TagDb::Item::Type type = TagDb::Item::Type::image;
     std::vector<Glib::ustring> tags;
     bool favorite = false;
-
-    // variables for reading from file
-    std::string line;
-    std::ifstream input(db_file_path);
 
     // check first line for header
     std::getline(input, line);
@@ -207,6 +211,16 @@ void TagDb::load_from_file(Glib::ustring db_file_path) {
             }
         }
 
+        else if (str_starts_with(line, "[dir]")) {
+            db_directories.insert(line.substr(5));
+        }
+
+        else if (str_starts_with(line, "[exclude]")) {
+            for (const Glib::ustring &tag : parse_tags(line.substr(9))) {
+                db_default_excluded_tags.insert(tag);
+            }
+        }
+
         else {
             throw FileParseException(line_number);
         }
@@ -223,9 +237,24 @@ void TagDb::load_from_file(Glib::ustring db_file_path) {
 void TagDb::write_to_file() const {
     std::ofstream output(db_file_path);
 
+    if (!output.good()) {
+        throw FileErrorException(db_file_path);
+    }
+
     output << "[TagView database file]" << std::endl << std::endl;
 
-    for (TagDb::Item item : items) {
+    for (const Glib::ustring &dir : db_directories) {
+        output << "[dir]" << dir << std::endl;
+    }
+
+    output << "[exclude]";
+    for (const Glib::ustring &tag : db_default_excluded_tags) {
+        output << tag.raw() << ' ';
+    }
+
+    output << std::endl;
+
+    for (const TagDb::Item &item : items) {
         output << item;
     }
 
@@ -242,6 +271,14 @@ std::set<Glib::ustring> TagDb::get_all_tags() const {
     }
 
     return result;
+}
+
+const std::set<Glib::ustring> &TagDb::get_default_excluded_tags() const {
+    return db_default_excluded_tags;
+}
+
+const std::set<Glib::ustring> &TagDb::get_all_directories() const {
+    return db_directories;
 }
 
 const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &file_path) {

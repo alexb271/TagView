@@ -1,4 +1,8 @@
+// gtkmm
+#include <gtkmm/messagedialog.h>
+
 // project
+#include "gtkmm/enums.h"
 #include "mainwindow.hh"
 
 MainWindow::MainWindow()
@@ -62,6 +66,9 @@ MainWindow::MainWindow()
     // configure item window
     add_item_window.set_completer_model(list_store);
 
+    // configure dbsettings window
+    db_settings_window.set_completer_model(list_store);
+
     // configure window
     set_child(box);
     set_title("TagView");
@@ -70,9 +77,24 @@ MainWindow::MainWindow()
 }
 
 void MainWindow::load_database() {
-    db.load_from_file("../TestGallery/database.txt");
-    set_completer_data(db.get_all_tags());
     main_menu.hide();
+    try {
+        db.load_from_file("../TestGallery/database.txt");
+    }
+    catch (TagDb::FileParseException &ex) {
+        show_warning("Error Loading Database",
+                     "There was an error parsing the file at line " + std::to_string(ex.line_number));
+        return;
+    }
+    catch (TagDb::FileErrorException &ex) {
+        show_warning("Error Loading Database",
+                     "There was an error opening the file:\n" + ex.file_path);
+
+        return;
+    }
+
+    set_completer_data(db.get_all_tags());
+    db_settings_window.reset(db.get_all_directories(), db.get_default_excluded_tags());
     main_menu.set_show_database_controls(true);
 }
 
@@ -82,6 +104,17 @@ void MainWindow::set_completer_data(const std::set<Glib::ustring> &completer_tag
         auto row = *(list_store->append());
         row[list_model.tag] = tag;
     }
+}
+
+void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
+        message = std::make_unique<Gtk::MessageDialog>(*this, primary,
+                                                       false, Gtk::MessageType::WARNING);
+        message->set_secondary_text(secondary);
+        message->set_modal(true);
+        message->set_hide_on_close(true);
+        message->signal_response().connect(
+                sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
+        message->show();
 }
 
 void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
