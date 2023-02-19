@@ -128,6 +128,12 @@ void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
 }
 
 bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state) {
+    // Ctrl + Q exit
+    if (keyval == 'q' && static_cast<int>(state) == 0b00000100) {
+        hide();
+    }
+
+    // viewer image switching
     if (viewer.get_visible()) {
         if (keycode == 9) { // escape key
             on_hide_viewer();
