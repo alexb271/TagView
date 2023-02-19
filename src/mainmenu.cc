@@ -9,7 +9,7 @@ MainMenu::MainMenu()
     button_load_database("Load Database"),
     button_create_database("Create Database"),
     checkbutton_show_tag_picker(" Show Tag Picker"),
-    button_add_item("Add Item"),
+    button_add_items("Add Items"),
     button_db_settings("DB Settings"),
     button_preferences("Preferences"),
     button_about("About"),
@@ -18,7 +18,7 @@ MainMenu::MainMenu()
     // button config
     button_load_database.set_has_frame(false);
     button_create_database.set_has_frame(false);
-    button_add_item.set_has_frame(false);
+    button_add_items.set_has_frame(false);
     button_db_settings.set_has_frame(false);
     button_preferences.set_has_frame(false);
     button_about.set_has_frame(false);
@@ -28,7 +28,7 @@ MainMenu::MainMenu()
 
     // database config options such as add item
     // are hidden until a database is actually loaded
-    button_add_item.set_visible(false);
+    button_add_items.set_visible(false);
     button_db_settings.set_visible(false);
     sep_2.set_visible(false);
 
@@ -37,7 +37,7 @@ MainMenu::MainMenu()
     box.append(button_load_database);
     box.append(button_create_database);
     box.append(sep_1);
-    box.append(button_add_item);
+    box.append(button_add_items);
     box.append(button_db_settings);
     box.append(sep_2);
     box.append(checkbutton_show_tag_picker);
@@ -50,12 +50,12 @@ MainMenu::MainMenu()
 
 void MainMenu::set_show_database_controls(bool show_controls) {
     if (show_controls) {
-        button_add_item.set_visible(true);
+        button_add_items.set_visible(true);
         button_db_settings.set_visible(true);
         sep_2.set_visible(true);
     }
     else {
-        button_add_item.set_visible(false);
+        button_add_items.set_visible(false);
         button_db_settings.set_visible(false);
         sep_2.set_visible(false);
     }
@@ -73,8 +73,8 @@ Glib::SignalProxy<void()> MainMenu::signal_create_database() {
     return button_create_database.signal_clicked();
 }
 
-Glib::SignalProxy<void()> MainMenu::signal_add_item() {
-    return button_add_item.signal_clicked();
+Glib::SignalProxy<void()> MainMenu::signal_add_items() {
+    return button_add_items.signal_clicked();
 }
 
 Glib::SignalProxy<void()> MainMenu::signal_db_settings() {

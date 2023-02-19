@@ -45,6 +45,7 @@ DbSettingsWindow::DbSettingsWindow()
     // window setup (self)
     set_child(box);
     set_title("DB Settings");
+    set_size_request(200, 200);
     set_default_size(400, 600);
 }
 
@@ -52,9 +53,9 @@ void DbSettingsWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> complete
     tp_exclude.set_completer_model(completer_list);
 }
 
-void DbSettingsWindow::reset(const std::set<Glib::ustring> &directories,
+void DbSettingsWindow::setup(const std::set<Glib::ustring> &directories,
                              const std::set<Glib::ustring> &default_exclude_tags,
-                             const Glib::ustring &prefix)
+                             const std::string &prefix)
 {
     dirs.clear();
     for (const Glib::ustring &dir : directories) {

@@ -110,7 +110,7 @@ std::ostream& operator<<(std::ostream &os, TagDb::Item item) {
 TagDb::TagDb()
 {}
 
-void TagDb::load_from_file(Glib::ustring db_file_path) {
+void TagDb::load_from_file(std::string db_file_path) {
     // variables for reading from file
     std::string line;
     std::ifstream input(db_file_path);
@@ -278,7 +278,7 @@ const std::set<Glib::ustring> &TagDb::get_directories() const {
     return directories;
 }
 
-const Glib::ustring &TagDb::get_prefix() const {
+const std::string &TagDb::get_prefix() const {
     return prefix;
 }
 

@@ -25,7 +25,7 @@ MainWindow::MainWindow()
     button_main_menu.set_direction(Gtk::ArrowType::NONE);
     button_main_menu.set_popover(main_menu);
     main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::on_load_database));
-    main_menu.signal_add_item().connect(sigc::mem_fun(*this, &MainWindow::on_add_item));
+    main_menu.signal_add_items().connect(sigc::mem_fun(*this, &MainWindow::on_add_items));
     main_menu.signal_db_settings().connect(sigc::mem_fun(*this, &MainWindow::on_db_settings));
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
@@ -67,7 +67,7 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_key_pressed), false);
 
     // configure item window
-    add_item_window.set_completer_model(list_store);
+    item_window.set_completer_model(list_store);
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
@@ -102,7 +102,9 @@ void MainWindow::load_database(std::string db_file_path) {
 
     set_completer_data(db.get_all_tags());
     on_reload_default_exclude_required(); // load default excluded tags to tag_picer
-    db_settings_window.reset(db.get_directories(), db.get_default_excluded_tags(), db.get_prefix());
+    db_settings_window.setup(db.get_directories(), db.get_default_excluded_tags(), db.get_prefix());
+    item_window.set_directories(db.get_directories());
+    item_window.set_prefix(db.get_prefix());
     main_menu.set_show_database_controls(true);
 }
 
@@ -215,9 +217,15 @@ void MainWindow::on_load_database() {
     file_chooser->show();
 }
 
-void MainWindow::on_add_item() {
+void MainWindow::on_add_items() {
     main_menu.hide();
-    add_item_window.show();
+    std::vector<std::string> files;
+    files.push_back("/home/user/cat.jpg");
+    files.push_back("/home/user/Code/Gtk/TagView/TestGallery/screenshot.png");
+    files.push_back("/home/user/falcon.jpg");
+    files.push_back("/home/user/tropical.jpeg");
+    files.push_back("/does_not_exist");
+    item_window.add_items(files);
 }
 
 void MainWindow::on_db_settings() {
@@ -240,6 +248,7 @@ void MainWindow::on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_
 
 void MainWindow::on_directories_changed(const std::set<Glib::ustring> &directories) {
     db.set_directories(directories);
+    item_window.set_directories(directories);
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {
@@ -252,13 +261,7 @@ void MainWindow::on_file_chooser_response(int respone_id) {
 void MainWindow::on_test() {
     main_menu.hide();
 
-    list_store->clear();
-    auto row = *(list_store->append());
-    row[list_model.tag] = "apple";
-    row = *(list_store->append());
-    row[list_model.tag] = "banana";
-    row = *(list_store->append());
-    row[list_model.tag] = "orange";
+    load_database("/home/user/Code/Gtk/TagView/TestGallery/database.txt");
 }
 
 MainWindow::~MainWindow() {

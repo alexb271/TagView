@@ -52,7 +52,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         ViewerControls viewer_controls;
 
         // other windows
-        ItemWindow add_item_window;
+        ItemWindow item_window;
         DbSettingsWindow db_settings_window;
 
         // dialogs
@@ -91,7 +91,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // main menu
         void on_load_database();
-        void on_add_item();
+        void on_add_items();
         void on_db_settings();
         void on_tag_picker_toggled();
 

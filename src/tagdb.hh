@@ -1,6 +1,7 @@
 #pragma once
 
 // standard library
+#include <string>
 #include <vector>
 #include <set>
 #include <fstream>
@@ -75,13 +76,13 @@ class TagDb {
     public:
         TagDb();
 
-        void load_from_file(Glib::ustring db_file_path);
+        void load_from_file(std::string db_file_path);
         void write_to_file() const;
 
         std::set<Glib::ustring> get_all_tags() const;
         const std::set<Glib::ustring> &get_default_excluded_tags() const;
         const std::set<Glib::ustring> &get_directories() const;
-        const Glib::ustring &get_prefix() const;
+        const std::string &get_prefix() const;
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path);
 
         void set_directories(const std::set<Glib::ustring> &dirs);
@@ -95,8 +96,8 @@ class TagDb {
                                             unsigned int count) const;
     private:
         // member variables
-        Glib::ustring db_file_path;
-        Glib::ustring prefix;
+        std::string db_file_path;
+        std::string prefix;
         std::vector<Item> items;
         std::set<Glib::ustring> directories;
         std::set<Glib::ustring> default_excluded_tags;

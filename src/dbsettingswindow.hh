@@ -1,6 +1,7 @@
 #pragma once
 
 // standard library
+#include <string>
 #include <memory>
 
 // gtkmm
@@ -19,9 +20,9 @@ class DbSettingsWindow : public Gtk::Window {
         DbSettingsWindow();
 
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
-        void reset(const std::set<Glib::ustring> &directories,
+        void setup(const std::set<Glib::ustring> &directories,
                    const std::set<Glib::ustring> &default_exclude_tags,
-                   const Glib::ustring &prefix);
+                   const std::string &prefix);
         sigc::signal<void (const std::set<Glib::ustring> &)> signal_exclude_tags_changed();
         sigc::signal<void (const std::set<Glib::ustring> &)> signal_directoires_changed();
 
@@ -37,7 +38,7 @@ class DbSettingsWindow : public Gtk::Window {
         // members for adding directories
         std::unique_ptr<Gtk::MessageDialog> subdir_warning;
         std::unique_ptr<Gtk::FileChooserDialog> file_chooser;
-        Glib::ustring prefix;
+        std::string prefix;
 
         // signal handlers
         bool on_close_request() override;

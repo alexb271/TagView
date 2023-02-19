@@ -22,7 +22,7 @@ class MainMenu : public Gtk::Popover {
         // signal socket forwaring
         Glib::SignalProxy<void()> signal_load_database();
         Glib::SignalProxy<void()> signal_create_database();
-        Glib::SignalProxy<void()> signal_add_item();
+        Glib::SignalProxy<void()> signal_add_items();
         Glib::SignalProxy<void()> signal_db_settings();
         Glib::SignalProxy<void()> signal_show_tag_picker_toggled();
         Glib::SignalProxy<void()> signal_signal_preferences();
@@ -38,7 +38,7 @@ class MainMenu : public Gtk::Popover {
         Gtk::Button button_create_database;
         Gtk::CheckButton checkbutton_show_tag_picker;
         Gtk::Separator sep_1;
-        Gtk::Button button_add_item;
+        Gtk::Button button_add_items;
         Gtk::Button button_db_settings;
         Gtk::Separator sep_2;
         Gtk::Button button_preferences;
