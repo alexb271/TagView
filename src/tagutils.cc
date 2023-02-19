@@ -188,7 +188,7 @@ void ItemList::on_signal_exclude(const Glib::ustring &text) {
 }
 
 // TagPickerBase implementation
-TagPickerBase::TagPickerBase()
+TagPickerBase::TagPickerBase(bool label_below_entry)
 :
     tags(ItemList::Type::INSIDE),
     allow_create_new_tag(true)
@@ -207,8 +207,14 @@ TagPickerBase::TagPickerBase()
     g_signal_connect(entry.gobj(), "activate", G_CALLBACK(tag_editor_on_entry_activate), this);
 
     // box setup (self)
-    append(entry);
-    append(lbl_tags);
+    if (label_below_entry) {
+        append(entry);
+        append(lbl_tags);
+    }
+    else {
+        append(lbl_tags);
+        append(entry);
+    }
     append(tags);
 
     set_orientation(Gtk::Orientation::VERTICAL);

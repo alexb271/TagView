@@ -85,6 +85,9 @@ class MainWindow : public Gtk::ApplicationWindow {
         // gallery
         void on_gallery_item_chosen(size_t id);
         void on_gallery_item_selected(size_t id);
+        void on_gallery_failed_to_open(size_t id);
+        void on_gallery_edit_favorite(const Glib::ustring &file_path, bool favorite);
+        void on_gallery_edit(const Glib::ustring &file_path);
 
         // image viewer
         void on_hide_viewer();
@@ -101,6 +104,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // item window
         void on_add_item(TagDb::Item item);
+        void on_edit_item(TagDb::Item item);
 
         // dialog responses
         void on_file_chooser_response(int respone_id);

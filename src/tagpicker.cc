@@ -3,6 +3,7 @@
 
 TagPicker::TagPicker()
 :
+    TagPickerBase(true),
     tags_exclude(ItemList::Type::INSIDE),
     tags_current_item(ItemList::Type::OUTSIDE_WITH_EXCLUDE)
 {
@@ -24,6 +25,7 @@ TagPicker::TagPicker()
     // button setup
     btn_reload_default_exclude.set_icon_name("view-refresh-symbolic");
     btn_reload_default_exclude.set_halign(Gtk::Align::CENTER);
+    btn_reload_default_exclude.set_has_frame(false);
 
     append(sep1);
     append(lbl_tags_exclude);

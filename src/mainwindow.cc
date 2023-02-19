@@ -51,8 +51,16 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_reload_default_exclude_required));
 
     // configure preview gallery
-    gallery.signal_item_chosen().connect(sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
-    gallery.signal_item_selected().connect(sigc::mem_fun(*this, &MainWindow::on_gallery_item_selected));
+    gallery.signal_item_chosen().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
+    gallery.signal_item_selected().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_item_selected));
+    gallery.signal_failed_to_open().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_failed_to_open));
+    gallery.signal_edit_favorite().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_edit_favorite));
+    gallery.signal_edit().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_edit));
 
     // configure main box
     box.set_orientation(Gtk::Orientation::HORIZONTAL);
@@ -70,6 +78,8 @@ MainWindow::MainWindow()
     item_window.set_completer_model(list_store);
     item_window.signal_add_item().connect(
             sigc::mem_fun(*this, &MainWindow::on_add_item));
+    item_window.signal_edit_item().connect(
+            sigc::mem_fun(*this, &MainWindow::on_edit_item));
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
@@ -160,8 +170,12 @@ bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType s
 }
 
 void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
-    files = db.query(tag_selection.tags_include, tag_selection.tags_exclude);
-    gallery.set_content(files);
+    auto query = db.query(tag_selection.tags_include, tag_selection.tags_exclude);
+    files.clear();
+    for (const TagDb::Item &item : query) {
+        files.push_back(item.get_file_path());
+    }
+    gallery.set_content(query);
     if (!viewer.get_visible()) {
         tag_picker.clear_current_item_tags();
     }
@@ -189,6 +203,18 @@ void MainWindow::on_gallery_item_chosen(size_t id) {
 
 void MainWindow::on_gallery_item_selected(size_t id) {
     tag_picker.set_current_item_tags(db.get_tags_for_item(files.at(id)));
+}
+
+void MainWindow::on_gallery_failed_to_open(size_t id) {
+    show_warning("Failed to Load Item", files.at(id));
+}
+
+void MainWindow::on_gallery_edit_favorite(const Glib::ustring &file_path, bool favorite) {
+    db.edit_item_favorite(file_path, favorite);
+}
+
+void MainWindow::on_gallery_edit(const Glib::ustring &file_path) {
+    item_window.edit_item(db.get_item(file_path));
 }
 
 void MainWindow::on_hide_viewer() {
@@ -262,6 +288,17 @@ void MainWindow::on_directories_changed(const std::set<Glib::ustring> &directori
 void MainWindow::on_add_item(TagDb::Item item) {
     db.add_item(item);
     set_completer_data(db.get_all_tags());
+
+    // refresh the gallery
+    TagQuery query = tag_picker.get_current_query();
+    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+}
+
+void MainWindow::on_edit_item(TagDb::Item item) {
+    db.edit_item(item);
+    set_completer_data(db.get_all_tags());
+
+    tag_picker.set_current_item_tags(db.get_tags_for_item(db.get_prefix() + item.get_file_path()));
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {

@@ -22,16 +22,20 @@ class TagDb {
                  const std::set<Glib::ustring> &tags,
                  const bool &favorite);
 
-            Glib::ustring get_file_path() const;
-            Type get_type() const;
-
             void add_tag(const Glib::ustring &tag);
             void remove_tag(const Glib::ustring &tag);
+            void set_tags(const std::set<Glib::ustring> &tags);
             bool is_tagged(const Glib::ustring &tag) const;
             bool is_tagged(const std::set<Glib::ustring> &tags) const;
             const std::set<Glib::ustring> &get_tags() const;
 
-            bool is_favorite() const;
+            void set_file_path(const Glib::ustring &file_path);
+            const Glib::ustring &get_file_path() const;
+
+            void set_type(Type type);
+            Type get_type() const;
+
+            bool get_favorite() const;
             void set_favorite(const bool &favorite);
 
             bool operator< (const Item &other) const;
@@ -80,6 +84,9 @@ class TagDb {
         void write_to_file() const;
 
         void add_item(Item &item);
+        void edit_item_favorite(const Glib::ustring &file_path, bool favorite);
+        void edit_item(const Item &item);
+
         void set_directories(const std::set<Glib::ustring> &dirs);
         void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
 
@@ -88,8 +95,9 @@ class TagDb {
         const std::set<Glib::ustring> &get_directories() const;
         const std::string &get_prefix() const;
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path) const;
+        const Item &get_item(const Glib::ustring &file_path) const;
 
-        std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
+        std::vector<Item> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
 
         std::vector<Glib::ustring> top_tags(const std::vector<Glib::ustring> &tags_include,

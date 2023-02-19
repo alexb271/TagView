@@ -30,9 +30,10 @@ ItemWindow::ItemWindow()
     tag_editor.set_valign(Gtk::Align::START);
     tag_editor.set_size_request(-1, 200);
 
-    // buttons setup
+    // checkbox setup
     chk_fav.set_label(" Favorite");
 
+    // add mode buttons
     btn_skip.set_label("Skip");
     btn_skip.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_skip));
@@ -43,9 +44,25 @@ ItemWindow::ItemWindow()
     btn_add.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_add));
 
-    buttons_skip_add.set_orientation(Gtk::Orientation::HORIZONTAL);
-    buttons_skip_add.append(btn_skip);
-    buttons_skip_add.append(btn_add);
+    buttons_mode_add.set_orientation(Gtk::Orientation::HORIZONTAL);
+    buttons_mode_add.append(btn_skip);
+    buttons_mode_add.append(btn_add);
+
+    // edit_mode_buttons
+    btn_delete.set_label("Delete");
+    btn_delete.signal_clicked().connect(
+            sigc::mem_fun(*this, &ItemWindow::on_delete));
+
+
+    btn_edit.set_label("Apply");
+    btn_edit.set_halign(Gtk::Align::END);
+    btn_edit.set_hexpand(true);
+    btn_edit.signal_clicked().connect(
+            sigc::mem_fun(*this, &ItemWindow::on_edit));
+
+    buttons_mode_edit.set_orientation(Gtk::Orientation::HORIZONTAL);
+    buttons_mode_edit.append(btn_delete);
+    buttons_mode_edit.append(btn_edit);
 
     // box setup
     box.set_margin(15);
@@ -59,7 +76,7 @@ ItemWindow::ItemWindow()
     box.append(combo_dirs);
     box.append(chk_fav);
     box.append(tag_editor);
-    box.append(buttons_skip_add);
+    box.append(buttons_mode_add);
 
     set_child(box);
     set_size_request(200, 200);
@@ -86,9 +103,25 @@ void ItemWindow::set_prefix(const std::string &prefix) {
 
 void ItemWindow::add_items(const std::vector<std::string> &file_paths) {
     if (file_paths.size() == 0) { return; }
+    if (in_edit_mode) {
+        box.remove(buttons_mode_edit);
+        box.append(buttons_mode_add);
+    }
+    in_edit_mode = false;
     items_to_add = file_paths;
     current_idx = 0;
-    setup_for_item(current_idx);
+    setup_for_add_item(current_idx);
+    show();
+}
+
+void ItemWindow::edit_item(const TagDb::Item &item) {
+    if (!in_edit_mode) {
+        box.remove(buttons_mode_add);
+        box.append(buttons_mode_edit);
+    }
+    in_edit_mode = true;
+    current_item_type = item.get_type();
+    setup_for_edit_item(item);
     show();
 }
 
@@ -96,10 +129,16 @@ sigc::signal<void (TagDb::Item)> ItemWindow::signal_add_item() {
     return private_add_item;
 }
 
-void ItemWindow::setup_for_item(size_t idx) {
+sigc::signal<void (TagDb::Item)> ItemWindow::signal_edit_item() {
+    return private_edit_item;
+}
+
+void ItemWindow::setup_for_add_item(size_t idx) {
     set_title(std::to_string(idx + 1) + "/" + std::to_string(items_to_add.size()));
     lbl_item_path.set_text(items_to_add.at(idx));
     item_picture.set_filename(items_to_add.at(idx));
+    lbl_copy_to_dir.set_visible(true);
+    combo_dirs.set_visible(true);
     combo_dirs.set_active(0);
 
     // do not copy if file is already in a valid subdirectory
@@ -116,9 +155,25 @@ void ItemWindow::setup_for_item(size_t idx) {
     tag_editor.clear();
 }
 
-bool ItemWindow::copy(size_t idx) {
+void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
+{
+    set_title("Edit Item");
+    lbl_item_path.set_text(item.get_file_path());
+    item_picture.set_filename(prefix + item.get_file_path());
+    chk_fav.set_active(item.get_favorite());
+
+    lbl_copy_to_dir.set_visible(false);
+    combo_dirs.set_visible(false);
+
+    tag_editor.clear();
+    for (const Glib::ustring &tag : item.get_tags()) {
+        tag_editor.add_tag(tag);
+    }
+}
+
+bool ItemWindow::copy(const std::string &file_path) {
     // item name is the part of the path after the last /
-    std::string item_name = items_to_add.at(idx).substr(items_to_add.at(idx).find_last_of("/") + 1);
+    std::string item_name = file_path.substr(file_path.find_last_of("/") + 1);
 
     // configure directory
     std::string dir = combo_dirs.get_active_text();
@@ -129,7 +184,7 @@ bool ItemWindow::copy(size_t idx) {
     std::string destination_path = prefix + dir + item_name;
 
     // check if the source file exists
-    if (!std::filesystem::exists(items_to_add.at(idx))) {
+    if (!std::filesystem::exists(file_path)) {
         show_warning("Error Copying File", "The source file could not be found.");
         return false;
     }
@@ -142,7 +197,7 @@ bool ItemWindow::copy(size_t idx) {
 
     // perform the copy
     try {
-        std::filesystem::copy_file(items_to_add.at(idx), destination_path);
+        std::filesystem::copy_file(file_path, destination_path);
     }
     catch (...) {
         show_warning("Error Copying File", "There was an error while copying the file.");
@@ -176,11 +231,6 @@ void ItemWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->show();
 }
 
-bool ItemWindow::on_close_request() {
-    hide();
-    return true;
-}
-
 void ItemWindow::on_add() {
     if (tag_editor.get_content().size() == 0) {
         show_warning("Error Adding Item", "Provide at least one tag for the item");
@@ -193,12 +243,12 @@ void ItemWindow::on_add() {
     else {
         bool result = true;
         if (!item_starts_with_prefix) {
-            result = copy(current_idx);
+            result = copy(items_to_add.at(current_idx));
         }
         if (result) {
             private_add_item.emit(create_db_item(current_idx));
             current_idx += 1;
-            setup_for_item(current_idx);
+            setup_for_add_item(current_idx);
         }
     }
 }
@@ -209,6 +259,25 @@ void ItemWindow::on_skip() {
     }
     else {
         current_idx += 1;
-        setup_for_item(current_idx);
+        setup_for_add_item(current_idx);
     }
 }
+
+void ItemWindow::on_edit() {
+    TagDb::Item result(lbl_item_path.get_text(),
+                       current_item_type,
+                       tag_editor.get_content(),
+                       chk_fav.get_active());
+    private_edit_item.emit(result);
+    hide();
+}
+
+void ItemWindow::on_delete() {
+
+}
+
+bool ItemWindow::on_close_request() {
+    hide();
+    return true;
+}
+

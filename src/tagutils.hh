@@ -106,7 +106,7 @@ class TagPickerBase : public Gtk::Box {
     };
 
     public:
-        TagPickerBase();
+        TagPickerBase(bool label_below_entry = false);
 
         const std::set<Glib::ustring> &get_content() const;
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);

@@ -1,14 +1,17 @@
 // standard library
+#include <memory>
 #include <stdexcept>
 
 // gtkmm
 #include <gtkmm/enums.h>
 #include <gtkmm/treepath.h>
+#include <gdkmm/rectangle.h>
 #include <sigc++/functors/mem_fun.h>
 
 // project
 #include "previewgallery.hh"
 
+// PreviewGallery implementation
 PreviewGallery::PreviewGallery(PreviewSize size)
 :
     store(Gtk::ListStore::create(icon_model)),
@@ -52,12 +55,12 @@ PreviewGallery::PreviewGallery(PreviewSize size)
     set_expand(true);
 }
 
-void PreviewGallery::set_content(const std::vector<Glib::ustring> &file_paths) {
+void PreviewGallery::set_content(const std::vector<TagDb::Item> &items) {
     // clear ListStore
     store->clear();
 
     // content is empty, show the no items label
-    if (file_paths.size() == 0) {
+    if (items.size() == 0) {
         if (!label_is_child) {
             set_child(no_items_label);
             label_is_child = true;
@@ -66,9 +69,12 @@ void PreviewGallery::set_content(const std::vector<Glib::ustring> &file_paths) {
     }
 
     // add items
-    for (size_t idx = 0; idx < file_paths.size(); idx++) {
-    // for (Glib::ustring item : file_paths) {
-        add_item(idx, file_paths.at(idx));
+    for (size_t idx = 0; idx < items.size(); idx++) {
+        bool result = add_item(idx, items.at(idx).get_file_path(), items.at(idx).get_favorite());
+        if (!result) {
+            private_signal_failed_to_open.emit(idx);
+            break;
+        }
     }
 
     // now that contents are available
@@ -103,7 +109,19 @@ sigc::signal<void (size_t)> PreviewGallery::signal_item_selected() {
     return private_signal_item_selected;
 }
 
-bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path) {
+sigc::signal<void (size_t)> PreviewGallery::signal_failed_to_open() {
+    return private_signal_failed_to_open;
+}
+
+sigc::signal<void (const Glib::ustring &, bool)> PreviewGallery::signal_edit_favorite() {
+    return private_edit_favorite;
+}
+
+sigc::signal<void (const Glib::ustring &)> PreviewGallery::signal_edit() {
+    return private_edit;
+}
+
+bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path, bool favorite) {
     // get pixbuf from file path
     Glib::RefPtr<Gdk::Pixbuf> pbuf;
 
@@ -127,6 +145,7 @@ bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path) {
     // add image to store
     auto row = *(store->append());
     row[icon_model.id] = id;
+    row[icon_model.favorite] = favorite;
     row[icon_model.file_path] = file_path;
     row[icon_model.name] = file_path.substr(file_path.find_last_of("/") + 1);
     row[icon_model.pixbuf] = pbuf;
@@ -156,8 +175,81 @@ void PreviewGallery::on_right_click(int n_times, double x, double y) {
     auto tree_path = icon_view.get_path_at_pos(std::round(x), std::round(y));
 
     if (tree_path) {
-        icon_view.select_path(tree_path);
-        // TODO
         // show GtkPopup for editing item
+        Gdk::Rectangle rect;
+        if (icon_view.get_cell_rect(tree_path, rect)) {
+            right_click_menu = std::make_unique<PreviewGallery::RightClickMenu>(*this);
+            right_click_menu->set_pointing_to(rect);
+
+            // set data for popup
+            Gtk::TreeRow row = (*(store->get_iter(tree_path)));
+            right_click_menu->set_favorite(row.get_value(icon_model.favorite));
+            right_click_menu->set_file_path(row.get_value(icon_model.file_path));
+
+            right_click_menu->show();
+        }
+        icon_view.select_path(tree_path);
     }
 }
+
+void PreviewGallery::on_fav_toggled() {
+    if (right_click_menu->is_visible()) {
+        private_edit_favorite.emit(right_click_menu->get_file_path(), right_click_menu->get_favorite());
+    }
+}
+
+void PreviewGallery::on_edit_clicked() {
+    right_click_menu->hide();
+    private_edit.emit(right_click_menu->get_file_path());
+}
+
+// RightClickMenu implementation
+PreviewGallery::RightClickMenu::RightClickMenu(PreviewGallery &parent) {
+    // wdiget setup
+    chk_fav.set_label(" Favorite");
+    chk_fav.signal_toggled().connect(
+            sigc::mem_fun(parent, &PreviewGallery::on_fav_toggled));
+    btn_edit_item.set_label("Edit");
+    btn_edit_item.set_has_frame(false);
+    btn_edit_item.signal_clicked().connect(
+            sigc::mem_fun(parent, &PreviewGallery::on_edit_clicked));
+
+    // box setup
+    box.set_orientation(Gtk::Orientation::VERTICAL);
+    box.set_margin(10);
+    box.set_spacing(15);
+    box.append(chk_fav);
+    box.append(btn_edit_item);
+
+    set_child(box);
+    set_parent(parent);
+}
+
+PreviewGallery::RightClickMenu::~RightClickMenu() {
+    unparent();
+}
+
+bool PreviewGallery::RightClickMenu::get_favorite() const {
+    return chk_fav.get_active();
+}
+
+void PreviewGallery::RightClickMenu::set_favorite(bool favorite) {
+    chk_fav.set_active(favorite);
+}
+
+const Glib::ustring &PreviewGallery::RightClickMenu::get_file_path() const {
+    return file_path;
+}
+
+void PreviewGallery::RightClickMenu::set_file_path(const Glib::ustring &file_path) {
+    this->file_path = file_path;
+}
+
+Glib::SignalProxy<void ()> PreviewGallery::RightClickMenu::signal_edit_favorite() {
+    return chk_fav.signal_toggled();
+}
+
+Glib::SignalProxy<void ()> PreviewGallery::RightClickMenu::signal_edit() {
+    return btn_edit_item.signal_clicked();
+}
+
