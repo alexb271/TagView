@@ -1,5 +1,6 @@
 # pragma once
 // standard library
+#include <memory>
 #include <vector>
 #include <set>
 
@@ -13,9 +14,11 @@
 #include <gtkmm/picture.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/liststore.h>
+#include <gtkmm/messagedialog.h>
 
 // project
 #include "tagutils.hh"
+#include "tagdb.hh"
 
 class ItemWindow : public Gtk::Window {
     public:
@@ -27,7 +30,7 @@ class ItemWindow : public Gtk::Window {
         void add_items(const std::vector<std::string> &file_paths);
 
         // signal forwarding
-        sigc::signal<void ()> signal_add_item();
+        sigc::signal<void (TagDb::Item)> signal_add_item();
 
     private:
         // widgets
@@ -42,8 +45,11 @@ class ItemWindow : public Gtk::Window {
         Gtk::Button btn_skip;
         Gtk::Button btn_add;
 
+        std::unique_ptr<Gtk::MessageDialog> message;
+
         // members
         std::string prefix;
+        std::string default_directory;
         bool in_edit_mode;
         std::vector<std::string> items_to_add;
         size_t current_idx;
@@ -51,6 +57,9 @@ class ItemWindow : public Gtk::Window {
 
         // functions
         void setup_for_item(size_t idx);
+        bool copy(size_t idx);
+        TagDb::Item create_db_item(size_t idx);
+        void show_warning(Glib::ustring primary, Glib::ustring secondary);
 
         // signal handlers
         bool on_close_request() override;
@@ -58,5 +67,5 @@ class ItemWindow : public Gtk::Window {
         void on_skip();
 
         // signals
-        sigc::signal<void ()> private_add_item;
+        sigc::signal<void (TagDb::Item)> private_add_item;
 };

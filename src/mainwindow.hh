@@ -99,6 +99,9 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_tags);
         void on_directories_changed(const std::set<Glib::ustring> &directories);
 
+        // item window
+        void on_add_item(TagDb::Item item);
+
         // dialog responses
         void on_file_chooser_response(int respone_id);
 

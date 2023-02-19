@@ -14,7 +14,7 @@ TagDb::Item::Item(const Glib::ustring &file_path, const Type &type)
 
 TagDb::Item::Item(const Glib::ustring &file_path,
      const Type &type,
-     const std::vector<Glib::ustring> &tags,
+     const std::set<Glib::ustring> &tags,
      const bool &favorite)
 :
     file_path(file_path),
@@ -131,7 +131,7 @@ void TagDb::load_from_file(std::string db_file_path) {
     // buffer variables
     Glib::ustring file_path = "";
     TagDb::Item::Type type = TagDb::Item::Type::image;
-    std::vector<Glib::ustring> tags;
+    std::set<Glib::ustring> tags;
     bool favorite = false;
 
     // check first line for header
@@ -258,6 +258,29 @@ void TagDb::write_to_file() const {
     output.close();
 }
 
+void TagDb::add_item(TagDb::Item &item) {
+    // remove entry if it already in the database
+    for (size_t idx = 0; idx < items.size(); idx++) {
+        if (items[idx].get_file_path() == item.get_file_path()) {
+            items.erase(items.begin() + idx);
+            break;
+        }
+    }
+
+    items.push_back(item);
+    write_to_file();
+}
+
+void TagDb::set_directories(const std::set<Glib::ustring> &dirs) {
+    directories = dirs;
+    write_to_file();
+}
+
+void TagDb::set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags) {
+    default_excluded_tags = exclude_tags;
+    write_to_file();
+}
+
 std::set<Glib::ustring> TagDb::get_all_tags() const {
     std::set<Glib::ustring> result;
 
@@ -282,7 +305,7 @@ const std::string &TagDb::get_prefix() const {
     return prefix;
 }
 
-const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &file_path) {
+const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &file_path) const {
     // remove the prefix from the argument
     Glib::ustring rel_path = file_path.substr(prefix.size());
 
@@ -292,16 +315,6 @@ const std::set<Glib::ustring> &TagDb::get_tags_for_item(const Glib::ustring &fil
         }
     }
     throw ItemNotFoundException(file_path);
-}
-
-void TagDb::set_directories(const std::set<Glib::ustring> &dirs) {
-    directories = dirs;
-    write_to_file();
-}
-
-void TagDb::set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags) {
-    default_excluded_tags = exclude_tags;
-    write_to_file();
 }
 
 std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_include,
@@ -339,8 +352,8 @@ std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_incl
     return result;
 }
 
-std::vector<Glib::ustring> TagDb::parse_tags(const std::string &line) {
-    std::vector<Glib::ustring> result;
+std::set<Glib::ustring> TagDb::parse_tags(const std::string &line) {
+    std::set<Glib::ustring> result;
 
     // strip whitespaces from the right
     std::string str = line.substr(0, line.find_last_not_of("\t \n") + 1);
@@ -349,10 +362,10 @@ std::vector<Glib::ustring> TagDb::parse_tags(const std::string &line) {
     size_t current = 0;
 
     while ((current = str.find(' ', last)) != std::string::npos) {
-        result.push_back(str.substr(last, current - last));
+        result.insert(str.substr(last, current - last));
         last = current + 1;
     }
-    result.push_back(str.substr(last, current - last));
+    result.insert(str.substr(last, current - last));
 
     return result;
 }

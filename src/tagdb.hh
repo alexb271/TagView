@@ -19,7 +19,7 @@ class TagDb {
             Item(const Glib::ustring &file_path, const Type &type);
             Item(const Glib::ustring &file_path,
                  const Type &type,
-                 const std::vector<Glib::ustring> &tags,
+                 const std::set<Glib::ustring> &tags,
                  const bool &favorite);
 
             Glib::ustring get_file_path() const;
@@ -79,14 +79,15 @@ class TagDb {
         void load_from_file(std::string db_file_path);
         void write_to_file() const;
 
+        void add_item(Item &item);
+        void set_directories(const std::set<Glib::ustring> &dirs);
+        void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
+
         std::set<Glib::ustring> get_all_tags() const;
         const std::set<Glib::ustring> &get_default_excluded_tags() const;
         const std::set<Glib::ustring> &get_directories() const;
         const std::string &get_prefix() const;
-        const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path);
-
-        void set_directories(const std::set<Glib::ustring> &dirs);
-        void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
+        const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path) const;
 
         std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
@@ -104,5 +105,5 @@ class TagDb {
 
         // functions
         bool str_starts_with(const std::string &str, const std::string &argument);
-        std::vector<Glib::ustring> parse_tags(const std::string &str);
+        std::set<Glib::ustring> parse_tags(const std::string &str);
 };

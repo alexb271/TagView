@@ -68,6 +68,8 @@ MainWindow::MainWindow()
 
     // configure item window
     item_window.set_completer_model(list_store);
+    item_window.signal_add_item().connect(
+            sigc::mem_fun(*this, &MainWindow::on_add_item));
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
@@ -255,6 +257,11 @@ void MainWindow::on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_
 void MainWindow::on_directories_changed(const std::set<Glib::ustring> &directories) {
     db.set_directories(directories);
     item_window.set_directories(directories);
+}
+
+void MainWindow::on_add_item(TagDb::Item item) {
+    db.add_item(item);
+    set_completer_data(db.get_all_tags());
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {
