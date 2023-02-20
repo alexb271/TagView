@@ -1,5 +1,6 @@
 // standard library
 #include <algorithm>
+#include <filesystem>
 
 // project
 #include "tagdb.hh"
@@ -270,6 +271,19 @@ void TagDb::write_to_file() const {
     output.close();
 }
 
+void TagDb::add_item(TagDb::Item &item) {
+    // remove entry if it already in the database
+    for (size_t idx = 0; idx < items.size(); idx++) {
+        if (items[idx].get_file_path() == item.get_file_path()) {
+            items.erase(items.begin() + idx);
+            break;
+        }
+    }
+
+    items.push_back(item);
+    write_to_file();
+}
+
 void TagDb::edit_item_favorite(const Glib::ustring &file_path, bool favorite) {
     // remove the prefix from the argument
     Glib::ustring rel_path = file_path.substr(prefix.size());
@@ -296,20 +310,33 @@ void TagDb::edit_item(const Item &item) {
         }
     }
 
-    throw ItemNotFoundException(item.get_file_path());
+    throw ItemNotFoundException(prefix + item.get_file_path());
 }
 
-void TagDb::add_item(TagDb::Item &item) {
-    // remove entry if it already in the database
+void TagDb::delete_item(const Glib::ustring &file_path, bool delete_file) {
+    // remove the prefix from the argument
+    Glib::ustring rel_path = file_path.substr(prefix.size());
+
+    bool found = false;
+
     for (size_t idx = 0; idx < items.size(); idx++) {
-        if (items[idx].get_file_path() == item.get_file_path()) {
+        if (items[idx].get_file_path() == rel_path) {
             items.erase(items.begin() + idx);
+            found = true;
+            write_to_file();
             break;
         }
     }
 
-    items.push_back(item);
-    write_to_file();
+    if (!found) { throw ItemNotFoundException(file_path); }
+
+    if (delete_file) {
+        try {
+            std::filesystem::remove(file_path.raw());
+        }
+        catch (...) {}
+    }
+
 }
 
 void TagDb::set_directories(const std::set<Glib::ustring> &dirs) {

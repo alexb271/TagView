@@ -2,6 +2,8 @@
 #include <filesystem>
 
 // project
+#include "gtkmm/dialog.h"
+#include "gtkmm/messagedialog.h"
 #include "itemwindow.hh"
 
 ItemWindow::ItemWindow()
@@ -120,7 +122,8 @@ void ItemWindow::edit_item(const TagDb::Item &item) {
         box.append(buttons_mode_edit);
     }
     in_edit_mode = true;
-    current_item_type = item.get_type();
+    current_edited_item_type = item.get_type();
+    current_edited_item_file_path = item.get_file_path();
     setup_for_edit_item(item);
     show();
 }
@@ -131,6 +134,10 @@ sigc::signal<void (TagDb::Item)> ItemWindow::signal_add_item() {
 
 sigc::signal<void (TagDb::Item)> ItemWindow::signal_edit_item() {
     return private_edit_item;
+}
+
+sigc::signal<void (const Glib::ustring &, bool)> ItemWindow::signal_delete_item() {
+    return private_delete_item;
 }
 
 void ItemWindow::setup_for_add_item(size_t idx) {
@@ -264,8 +271,8 @@ void ItemWindow::on_skip() {
 }
 
 void ItemWindow::on_edit() {
-    TagDb::Item result(lbl_item_path.get_text(),
-                       current_item_type,
+    TagDb::Item result(current_edited_item_file_path,
+                       current_edited_item_type,
                        tag_editor.get_content(),
                        chk_fav.get_active());
     private_edit_item.emit(result);
@@ -273,7 +280,17 @@ void ItemWindow::on_edit() {
 }
 
 void ItemWindow::on_delete() {
+    delete_dialog = std::make_unique<ItemWindow::DeleteDialog>(*this);
+    delete_dialog->show();
+}
 
+void ItemWindow::on_delete_respone(int respone_id) {
+    delete_dialog->hide();
+    if (respone_id == Gtk::ResponseType::OK) {
+        private_delete_item.emit(prefix + current_edited_item_file_path,
+                                 delete_dialog->get_delete_file());
+        hide();
+    }
 }
 
 bool ItemWindow::on_close_request() {
@@ -281,3 +298,25 @@ bool ItemWindow::on_close_request() {
     return true;
 }
 
+// DeleteDialog implementation
+ItemWindow::DeleteDialog::DeleteDialog(ItemWindow &parent)
+:
+    Gtk::MessageDialog(parent, "Delete Item?", false, Gtk::MessageType::QUESTION,
+                       Gtk::ButtonsType::NONE, true)
+{
+    add_button("Cancel", Gtk::ResponseType::CANCEL);
+    add_button("Delete", Gtk::ResponseType::OK);
+    set_secondary_text("Are you sure you want to delete this item?");
+    set_hide_on_close(true);
+    set_modal(true);
+
+    chk_delete_file.set_label(" Also delete file");
+    chk_delete_file.set_halign(Gtk::Align::CENTER);
+    get_content_area()->append(chk_delete_file);
+
+    signal_response().connect(sigc::mem_fun(parent, &ItemWindow::on_delete_respone));
+}
+
+bool ItemWindow::DeleteDialog::get_delete_file() {
+    return chk_delete_file.get_active();
+}

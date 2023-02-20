@@ -80,6 +80,8 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_add_item));
     item_window.signal_edit_item().connect(
             sigc::mem_fun(*this, &MainWindow::on_edit_item));
+    item_window.signal_delete_item().connect(
+            sigc::mem_fun(*this, &MainWindow::on_delete_item));
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
@@ -299,6 +301,18 @@ void MainWindow::on_edit_item(TagDb::Item item) {
     set_completer_data(db.get_all_tags());
 
     tag_picker.set_current_item_tags(db.get_tags_for_item(db.get_prefix() + item.get_file_path()));
+
+    // refresh the gallery
+    TagQuery query = tag_picker.get_current_query();
+    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+}
+
+void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file) {
+    db.delete_item(file_path, delete_file);
+
+    // refresh the gallery
+    TagQuery query = tag_picker.get_current_query();
+    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {

@@ -86,6 +86,7 @@ class TagDb {
         void add_item(Item &item);
         void edit_item_favorite(const Glib::ustring &file_path, bool favorite);
         void edit_item(const Item &item);
+        void delete_item(const Glib::ustring &file_path, bool delete_file);
 
         void set_directories(const std::set<Glib::ustring> &dirs);
         void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
