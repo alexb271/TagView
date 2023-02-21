@@ -108,7 +108,7 @@ std::ostream& operator<<(std::ostream &os, TagDb::Item item) {
 
     os << "[tags]";
     for (Glib::ustring tag : item.tags) {
-        os << tag.raw() << ' ';
+        os << tag.raw() << ',';
     }
     os << std::endl;
 
@@ -475,10 +475,15 @@ std::set<Glib::ustring> TagDb::parse_tags(const std::string &line) {
     // strip whitespaces from the right
     std::string str = line.substr(0, line.find_last_not_of("\t \n") + 1);
 
+    // strip final comma if there
+    if (str[str.size() - 1] == ',') {
+        str.erase(str.size() - 1);
+    }
+
     size_t last = 0;
     size_t current = 0;
 
-    while ((current = str.find(' ', last)) != std::string::npos) {
+    while ((current = str.find(',', last)) != std::string::npos) {
         result.insert(str.substr(last, current - last));
         last = current + 1;
     }

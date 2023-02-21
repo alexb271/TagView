@@ -6,42 +6,42 @@
 [item]
 [path]blue.png
 [type]image
-[tags]blue 
+[tags]blue,
 [fave]no
 
 [item]
 [path]blue_green.png
 [type]image
-[tags]blue green 
+[tags]blue,green,
 [fave]no
 
 [item]
 [path]red/blue_red.png
 [type]image
-[tags]blue red 
+[tags]blue,red,
 [fave]no
 
 [item]
 [path]green.png
 [type]image
-[tags]green 
+[tags]green,
 [fave]no
 
 [item]
 [path]red/green_red.png
 [type]image
-[tags]green red 
+[tags]green,red,
 [fave]no
 
 [item]
 [path]red/red.png
 [type]image
-[tags]red 
+[tags]red,
 [fave]no
 
 [item]
 [path]red/red_blue_green.png
 [type]image
-[tags]blue green red 
+[tags]blue,green,red,
 [fave]yes
 

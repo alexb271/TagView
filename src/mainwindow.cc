@@ -98,7 +98,6 @@ MainWindow::MainWindow()
 }
 
 void MainWindow::load_database(std::string db_file_path) {
-    main_menu.hide();
     try {
         db.load_from_file(db_file_path);
     }
@@ -120,6 +119,13 @@ void MainWindow::load_database(std::string db_file_path) {
     item_window.set_directories(db.get_directories());
     item_window.set_prefix(db.get_prefix());
     main_menu.set_show_database_controls(true);
+
+    if (gallery.is_visible()) {
+        // refresh the gallery
+        TagQuery query = tag_picker.get_current_query();
+        files = db.query(query.tags_include, query.tags_exclude);
+        gallery.set_content(files);
+    }
 }
 
 void MainWindow::set_completer_data(const std::set<Glib::ustring> &completer_tags) {
@@ -285,7 +291,8 @@ void MainWindow::on_add_item(TagDb::Item item) {
 
     // refresh the gallery
     TagQuery query = tag_picker.get_current_query();
-    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+    files = db.query(query.tags_include, query.tags_exclude);
+    gallery.set_content(files);
 }
 
 void MainWindow::on_edit_item(TagDb::Item item) {
@@ -296,7 +303,8 @@ void MainWindow::on_edit_item(TagDb::Item item) {
 
     // refresh the gallery
     TagQuery query = tag_picker.get_current_query();
-    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+    files = db.query(query.tags_include, query.tags_exclude);
+    gallery.set_content(files);
 }
 
 void MainWindow::on_request_suggestions(const std::set<Glib::ustring> &tags) {
@@ -308,7 +316,8 @@ void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file
 
     // refresh the gallery
     TagQuery query = tag_picker.get_current_query();
-    gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+    files = db.query(query.tags_include, query.tags_exclude);
+    gallery.set_content(files);
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {

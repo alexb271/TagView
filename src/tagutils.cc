@@ -266,6 +266,19 @@ void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {
     // get the inserted text
     Glib::ustring text = entry->get_text();
 
+    // exit if string contains only whitespaces
+    // or if it contains a comma
+    if (text.find_first_not_of("\t \n") == Glib::ustring::npos ||
+        text.find_first_of(",") != Glib::ustring::npos) {
+        return;
+    }
+
+    // strip whitespaces from start and end
+    text = text.substr(text.find_first_not_of("\t \n"));
+    if (text.find_last_not_of("\t \n") < text.size() - 1) {
+        text = text.substr(0, text.find_last_not_of("\t \n") + 1);
+    }
+
     // if entering new tags is allowed, simply add it
     if (tag_picker->allow_create_new_tag) {
         tag_picker->add_tag_notify(text);
