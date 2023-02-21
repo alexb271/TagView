@@ -50,6 +50,11 @@ src_files = files(
                  # buy the user in the Tag Picker widget.
                  'tagdb.cc',
 
+                 # A small class for loading a configuration file from
+                 # the home directory and presenting the choices to the
+                 # rest of the program
+                 'config.cc',
+
                  # Window for adding images to the database.
                  'itemwindow.cc',
 

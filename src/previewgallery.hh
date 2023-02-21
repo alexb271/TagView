@@ -82,9 +82,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
     private:
         // widgets
         Gtk::IconView icon_view;
-        IconModel icon_model;
         Glib::RefPtr<Gtk::ListStore> store;
-        PreviewSize size;
         Glib::RefPtr<Gtk::GestureClick> click;
         Gtk::Label no_items_label;
 
@@ -92,6 +90,8 @@ class PreviewGallery : public Gtk::ScrolledWindow {
 
         // members
         bool label_is_child;
+        PreviewSize size;
+        IconModel icon_model;
 
         // functions
         bool add_item(size_t id, const Glib::ustring &file_path);

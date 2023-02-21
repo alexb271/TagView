@@ -24,6 +24,7 @@
 #include "tagpicker.hh"
 #include "mainmenu.hh"
 #include "tagdb.hh"
+#include "config.hh"
 #include "itemwindow.hh"
 #include "dbsettingswindow.hh"
 
@@ -44,8 +45,9 @@ class MainWindow : public Gtk::ApplicationWindow {
         TagPicker tag_picker;
         MainMenu main_menu;
 
-        // Tag Database
+        // other custom classes
         TagDb db;
+        Config config;
 
         // header widgets
         Gtk::HeaderBar header;

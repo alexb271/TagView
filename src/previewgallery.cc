@@ -6,7 +6,6 @@
 #include <gtkmm/enums.h>
 #include <gtkmm/treepath.h>
 #include <gdkmm/rectangle.h>
-#include <sigc++/functors/mem_fun.h>
 
 // project
 #include "previewgallery.hh"
@@ -14,7 +13,6 @@
 // PreviewGallery implementation
 PreviewGallery::PreviewGallery(PreviewSize size)
 :
-    store(Gtk::ListStore::create(icon_model)),
     size(size)
 {
     // configure label for when the gallery is empty
@@ -23,7 +21,8 @@ PreviewGallery::PreviewGallery(PreviewSize size)
     no_items_label.set_valign(Gtk::Align::CENTER);
     no_items_label.set_expand(true);
 
-    // assign ListStore to this IconView
+    // setup ListStore with this IconView
+    store = Gtk::ListStore::create(icon_model),
     icon_view.set_model(store);
     icon_view.set_text_column(icon_model.name);
     icon_view.set_pixbuf_column(icon_model.pixbuf);
