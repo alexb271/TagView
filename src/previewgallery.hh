@@ -46,7 +46,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         PreviewGallery(PreviewSize size = PreviewSize::Medium);
 
         // functions
-        void set_content(const std::vector<TagDb::Item> &items);
+        void set_content(const std::vector<Glib::ustring> &items);
         void set_size(PreviewSize size);
         PreviewSize get_size() const;
         Glib::ustring get_file_path(const Gtk::TreePath &tpath) const;
@@ -56,16 +56,12 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         sigc::signal<void (size_t)> signal_item_chosen();
         sigc::signal<void (size_t)> signal_item_selected();
         sigc::signal<void (size_t)> signal_failed_to_open();
-        sigc::signal<void (const Glib::ustring &, bool)> signal_edit_favorite();
         sigc::signal<void (const Glib::ustring &)> signal_edit();
 
     private: class RightClickMenu : public Gtk::Popover {
                  public:
                      RightClickMenu(PreviewGallery &parent);
                      ~RightClickMenu() override;
-
-                     bool get_favorite() const;
-                     void set_favorite(bool favorite);
 
                      const Glib::ustring &get_file_path() const;
                      void set_file_path(const Glib::ustring &file_path);
@@ -77,7 +73,6 @@ class PreviewGallery : public Gtk::ScrolledWindow {
                  private:
                      // widgets
                      Gtk::Box box;
-                     Gtk::CheckButton chk_fav;
                      Gtk::Button btn_edit_item;
 
                      // members
@@ -99,7 +94,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         bool label_is_child;
 
         // functions
-        bool add_item(size_t id, const Glib::ustring &file_path, bool favorite);
+        bool add_item(size_t id, const Glib::ustring &file_path);
 
         // signal handlers
         void on_item_activate(const Gtk::TreePath &tpath);
@@ -112,6 +107,5 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         sigc::signal<void (size_t)> private_signal_item_chosen;
         sigc::signal<void (size_t)> private_signal_item_selected;
         sigc::signal<void (size_t)> private_signal_failed_to_open;
-        sigc::signal<void (const Glib::ustring &, bool)> private_edit_favorite;
         sigc::signal<void (const Glib::ustring &)> private_edit;
 };

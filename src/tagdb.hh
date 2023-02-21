@@ -84,7 +84,6 @@ class TagDb {
         void write_to_file() const;
 
         void add_item(Item &item);
-        void edit_item_favorite(const Glib::ustring &file_path, bool favorite);
         void edit_item(const Item &item);
         void delete_item(const Glib::ustring &file_path, bool delete_file);
 
@@ -98,7 +97,7 @@ class TagDb {
         const std::set<Glib::ustring> &get_tags_for_item(const Glib::ustring &file_path) const;
         const Item &get_item(const Glib::ustring &file_path) const;
 
-        std::vector<Item> query(const std::set<Glib::ustring> &tags_include,
+        std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
 
         std::vector<Glib::ustring> top_tags(const std::vector<Glib::ustring> &tags_include,

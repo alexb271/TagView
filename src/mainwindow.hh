@@ -86,7 +86,6 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_gallery_item_chosen(size_t id);
         void on_gallery_item_selected(size_t id);
         void on_gallery_failed_to_open(size_t id);
-        void on_gallery_edit_favorite(const Glib::ustring &file_path, bool favorite);
         void on_gallery_edit(const Glib::ustring &file_path);
 
         // image viewer

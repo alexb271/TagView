@@ -284,21 +284,6 @@ void TagDb::add_item(TagDb::Item &item) {
     write_to_file();
 }
 
-void TagDb::edit_item_favorite(const Glib::ustring &file_path, bool favorite) {
-    // remove the prefix from the argument
-    Glib::ustring rel_path = file_path.substr(prefix.size());
-
-    for (size_t idx = 0; idx < items.size(); idx++) {
-        if (items[idx].get_file_path() == rel_path) {
-            items[idx].set_favorite(favorite);
-            write_to_file();
-            return;
-        }
-    }
-
-    throw ItemNotFoundException(file_path);
-}
-
 void TagDb::edit_item(const Item &item) {
     for (size_t idx = 0; idx < items.size(); idx++) {
         if (items[idx].get_file_path() == item.get_file_path()) {
@@ -398,10 +383,10 @@ const TagDb::Item &TagDb::get_item(const Glib::ustring &file_path) const {
     throw ItemNotFoundException(file_path);
 }
 
-std::vector<TagDb::Item> TagDb::query(const std::set<Glib::ustring> &tags_include,
+std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_include,
                                         const std::set<Glib::ustring> &tags_exclude) const
 {
-    std::vector<TagDb::Item> result;
+    std::vector<Glib::ustring> result;
     std::vector<const TagDb::Item *> result_items;
 
     for (const TagDb::Item &item : items) {
@@ -427,8 +412,7 @@ std::vector<TagDb::Item> TagDb::query(const std::set<Glib::ustring> &tags_includ
               [](const TagDb::Item *a, const TagDb::Item *b){ return (*a) < (*b); });
 
     for (const TagDb::Item *item : result_items) {
-        result.push_back(*item);
-        result.at(result.size() - 1).set_file_path(prefix + item->get_file_path());
+        result.push_back(prefix + item->get_file_path());
     }
 
     return result;

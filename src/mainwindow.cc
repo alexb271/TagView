@@ -57,8 +57,6 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_gallery_item_selected));
     gallery.signal_failed_to_open().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_failed_to_open));
-    gallery.signal_edit_favorite().connect(
-            sigc::mem_fun(*this, &MainWindow::on_gallery_edit_favorite));
     gallery.signal_edit().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_edit));
 
@@ -172,12 +170,8 @@ bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType s
 }
 
 void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
-    auto query = db.query(tag_selection.tags_include, tag_selection.tags_exclude);
-    files.clear();
-    for (const TagDb::Item &item : query) {
-        files.push_back(item.get_file_path());
-    }
-    gallery.set_content(query);
+    files = db.query(tag_selection.tags_include, tag_selection.tags_exclude);
+    gallery.set_content(files);
     if (!viewer.get_visible()) {
         tag_picker.clear_current_item_tags();
     }
@@ -209,10 +203,6 @@ void MainWindow::on_gallery_item_selected(size_t id) {
 
 void MainWindow::on_gallery_failed_to_open(size_t id) {
     show_warning("Failed to Load Item", files.at(id));
-}
-
-void MainWindow::on_gallery_edit_favorite(const Glib::ustring &file_path, bool favorite) {
-    db.edit_item_favorite(file_path, favorite);
 }
 
 void MainWindow::on_gallery_edit(const Glib::ustring &file_path) {
