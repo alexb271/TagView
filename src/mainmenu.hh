@@ -25,8 +25,8 @@ class MainMenu : public Gtk::Popover {
         Glib::SignalProxy<void()> signal_add_items();
         Glib::SignalProxy<void()> signal_db_settings();
         Glib::SignalProxy<void()> signal_show_tag_picker_toggled();
-        Glib::SignalProxy<void()> signal_signal_preferences();
-        Glib::SignalProxy<void()> signal_signal_about();
+        Glib::SignalProxy<void()> signal_preferences();
+        Glib::SignalProxy<void()> signal_about();
         Glib::SignalProxy<void()> signal_test();
 
     private:

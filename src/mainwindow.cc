@@ -29,6 +29,7 @@ MainWindow::MainWindow()
     main_menu.signal_db_settings().connect(sigc::mem_fun(*this, &MainWindow::on_db_settings));
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
+    main_menu.signal_about().connect(sigc::mem_fun(*this, &MainWindow::on_about));
     main_menu.signal_test().connect(sigc::mem_fun(*this, &MainWindow::on_test));
 
     // configure header
@@ -274,6 +275,22 @@ void MainWindow::on_tag_picker_toggled() {
     else {
         tag_picker.set_visible(false);
     }
+}
+
+void MainWindow::on_about() {
+    main_menu.hide();
+    about_dialog = std::make_unique<Gtk::AboutDialog>();
+
+    // use the same icon as the default gnome image viewer
+    // which also depends on the system theme
+    about_dialog->set_logo_icon_name("org.gnome.eog");
+    about_dialog->set_program_name("TagView");
+    about_dialog->set_comments("A tagging image viewer");
+    about_dialog->set_version("0.1");
+    about_dialog->set_website("https://github.com/alexb271/tagview/");
+    about_dialog->set_website_label("https://github.com/alexb271/tagview/");
+    about_dialog->set_license_type(Gtk::License::GPL_3_0);
+    about_dialog->show();
 }
 
 void MainWindow::on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_tags) {

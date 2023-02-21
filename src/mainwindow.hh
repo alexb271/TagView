@@ -15,6 +15,7 @@
 #include <gtkmm/eventcontrollerkey.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/aboutdialog.h>
 
 // project
 #include "imageviewer.hh"
@@ -58,6 +59,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         // dialogs
         std::unique_ptr<Gtk::MessageDialog> message;
         std::unique_ptr<Gtk::FileChooserDialog> file_chooser;
+        std::unique_ptr<Gtk::AboutDialog> about_dialog;
 
         // main regular widgets
         Gtk::Box box;
@@ -96,6 +98,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_add_items();
         void on_db_settings();
         void on_tag_picker_toggled();
+        void on_about();
 
         // db settings window
         void on_exclude_tags_changed(const std::set<Glib::ustring> &exclude_tags);

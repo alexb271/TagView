@@ -85,11 +85,11 @@ Glib::SignalProxy<void()> MainMenu::signal_show_tag_picker_toggled() {
     return checkbutton_show_tag_picker.signal_toggled();
 }
 
-Glib::SignalProxy<void()> MainMenu::signal_signal_preferences() {
+Glib::SignalProxy<void()> MainMenu::signal_preferences() {
     return button_preferences.signal_clicked();
 }
 
-Glib::SignalProxy<void()> MainMenu::signal_signal_about() {
+Glib::SignalProxy<void()> MainMenu::signal_about() {
     return button_about.signal_clicked();
 }
 
