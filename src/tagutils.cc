@@ -73,7 +73,7 @@ Glib::SignalProxy<void()> ItemOutsideQuery::signal_exclude() {
     return exclude.signal_clicked();
 }
 
-// ItemInQueryList implementation
+// ItemList implementation
 ItemList::ItemList(ItemList::Type type)
 :
     type(type)
@@ -144,6 +144,14 @@ void ItemList::clear() {
 
 const std::set<Glib::ustring> &ItemList::get_content() const {
     return items;
+}
+
+bool ItemList::contains(const Glib::ustring &item) const {
+    return items.count(item);
+}
+
+size_t ItemList::size() const {
+    return widgets.size();
 }
 
 sigc::signal<void (const std::set<Glib::ustring> &)> ItemList::signal_contents_changed() {
@@ -253,6 +261,14 @@ void TagPickerBase::clear_text() {
 
 void TagPickerBase::add_tag(const Glib::ustring &tag) {
     tags.append(tag);
+}
+
+bool TagPickerBase::contains(const Glib::ustring &item) const {
+    return tags.contains(item);
+}
+
+size_t TagPickerBase::size() const {
+    return tags.size();
 }
 
 void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data) {

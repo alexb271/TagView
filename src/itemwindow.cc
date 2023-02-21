@@ -39,7 +39,8 @@ ItemWindow::ItemWindow()
     lbl_suggestions.set_margin_start(60);
     lbl_suggestions.set_valign(Gtk::Align::END);
     tag_suggestions.set_margin_start(60);
-    tag_suggestions.set_valign(Gtk::Align::END);
+    tag_suggestions.set_margin_top(15);
+    tag_suggestions.set_valign(Gtk::Align::START);
     tag_suggestions.signal_add().connect(
             sigc::mem_fun(*this, &ItemWindow::on_add_suggestion));
 
@@ -133,14 +134,26 @@ void ItemWindow::set_suggestions(const std::vector<Glib::ustring> &tags) {
     }
 
     size_t count = suggestion_count < tags.size() ? suggestion_count : tags.size();
+    size_t idx = 0;
 
     tag_suggestions.clear();
-    for (size_t i = 0; i < count; i++) {
-        tag_suggestions.append(tags.at(i));
+    for (size_t i = 0; i < count && idx < tags.size(); i++, idx++) {
+        if (tag_editor.contains(tags.at(idx))) {
+            i -= 1;
+        }
+        else {
+            tag_suggestions.append(tags.at(idx));
+        }
     }
 
-    lbl_suggestions.set_visible(true);
-    tag_suggestions.set_visible(true);
+    if (tag_suggestions.size() > 0) {
+        lbl_suggestions.set_visible(true);
+        tag_suggestions.set_visible(true);
+    }
+    else {
+        lbl_suggestions.set_visible(false);
+        tag_suggestions.set_visible(false);
+    }
 }
 
 void ItemWindow::add_items(const std::vector<std::string> &file_paths) {
@@ -292,6 +305,7 @@ void ItemWindow::on_tag_editor_contents_changed(const std::set<Glib::ustring> &t
 
 void ItemWindow::on_add_suggestion(const Glib::ustring &tag) {
     tag_editor.add_tag(tag);
+    private_request_suggestions.emit(tag_editor.get_content());
 }
 
 void ItemWindow::on_add() {

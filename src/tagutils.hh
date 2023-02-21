@@ -70,6 +70,8 @@ class ItemList : public Gtk::ScrolledWindow {
         void append_and_notify(const Glib::ustring &text);
         void clear();
         const std::set<Glib::ustring> &get_content() const;
+        bool contains(const Glib::ustring &item) const;
+        size_t size() const;
 
         // signal forwarding
         sigc::signal<void (const std::set<Glib::ustring> &)> signal_contents_changed();
@@ -116,6 +118,8 @@ class TagPickerBase : public Gtk::Box {
         void clear();
         void clear_text();
         void add_tag(const Glib::ustring &tag);
+        bool contains(const Glib::ustring &item) const;
+        size_t size() const;
 
         // C signal handler friend function
         friend void tag_editor_on_entry_activate(GtkEntry *c_entry, gpointer data);
