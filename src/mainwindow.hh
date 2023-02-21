@@ -80,6 +80,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void load_database(std::string db_file_path);
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
         void show_warning(Glib::ustring primary, Glib::ustring secondary);
+        void refresh_gallery();
 
         // signal handlers
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
@@ -114,6 +115,10 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_edit_item(TagDb::Item item);
         void on_delete_item(const Glib::ustring &file_path, bool delete_file);
         void on_request_suggestions(const std::set<Glib::ustring> &tags);
+
+        // preferences window
+        void on_select_default_db(const std::string &default_db_path);
+        void on_set_preview_size(PreviewGallery::PreviewSize size);
 
         // dialog responses
         void on_file_chooser_response(int respone_id);

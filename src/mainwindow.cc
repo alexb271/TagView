@@ -53,7 +53,7 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_reload_default_exclude_required));
 
     // configure preview gallery
-    gallery.set_size(config.get_preview_size());
+    gallery.set_preview_size(config.get_preview_size());
     gallery.signal_item_chosen().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
     gallery.signal_item_selected().connect(
@@ -96,6 +96,10 @@ MainWindow::MainWindow()
     // configure preferences window
     preferences_window.set_default_db_path(config.get_default_db_path());
     preferences_window.set_preview_size(config.get_preview_size());
+    preferences_window.signal_select_defualt_db().connect(
+            sigc::mem_fun(*this, &MainWindow::on_select_default_db));
+    preferences_window.signal_set_preview_size().connect(
+            sigc::mem_fun(*this, &MainWindow::on_set_preview_size));
 
     // configure window
     set_child(box);
@@ -133,10 +137,7 @@ void MainWindow::load_database(std::string db_file_path) {
     main_menu.set_show_database_controls(true);
 
     if (gallery.is_visible()) {
-        // refresh the gallery
-        TagQuery query = tag_picker.get_current_query();
-        files = db.query(query.tags_include, query.tags_exclude);
-        gallery.set_content(files);
+        refresh_gallery();
     }
 }
 
@@ -148,11 +149,6 @@ void MainWindow::set_completer_data(const std::set<Glib::ustring> &completer_tag
     }
 }
 
-void MainWindow::on_preferences() {
-    main_menu.hide();
-    preferences_window.show();
-}
-
 void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message = std::make_unique<Gtk::MessageDialog>(*this, primary,
                                                        false, Gtk::MessageType::WARNING);
@@ -162,6 +158,12 @@ void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->signal_response().connect(
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
         message->show();
+}
+
+void MainWindow::refresh_gallery() {
+    TagQuery query = tag_picker.get_current_query();
+    files = db.query(query.tags_include, query.tags_exclude);
+    gallery.set_content(files);
 }
 
 bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state) {
@@ -293,6 +295,11 @@ void MainWindow::on_tag_picker_toggled() {
     }
 }
 
+void MainWindow::on_preferences() {
+    main_menu.hide();
+    preferences_window.show();
+}
+
 void MainWindow::on_about() {
     main_menu.hide();
     about_dialog = std::make_unique<Gtk::AboutDialog>();
@@ -322,10 +329,7 @@ void MainWindow::on_add_item(TagDb::Item item) {
     db.add_item(item);
     set_completer_data(db.get_all_tags());
 
-    // refresh the gallery
-    TagQuery query = tag_picker.get_current_query();
-    files = db.query(query.tags_include, query.tags_exclude);
-    gallery.set_content(files);
+    refresh_gallery();
 }
 
 void MainWindow::on_edit_item(TagDb::Item item) {
@@ -334,10 +338,7 @@ void MainWindow::on_edit_item(TagDb::Item item) {
 
     tag_picker.set_current_item_tags(db.get_tags_for_item(db.get_prefix() + item.get_file_path()));
 
-    // refresh the gallery
-    TagQuery query = tag_picker.get_current_query();
-    files = db.query(query.tags_include, query.tags_exclude);
-    gallery.set_content(files);
+    refresh_gallery();
 }
 
 void MainWindow::on_request_suggestions(const std::set<Glib::ustring> &tags) {
@@ -347,10 +348,18 @@ void MainWindow::on_request_suggestions(const std::set<Glib::ustring> &tags) {
 void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file) {
     db.delete_item(file_path, delete_file);
 
-    // refresh the gallery
-    TagQuery query = tag_picker.get_current_query();
-    files = db.query(query.tags_include, query.tags_exclude);
-    gallery.set_content(files);
+    refresh_gallery();
+}
+
+void MainWindow::on_select_default_db(const std::string &default_db_path) {
+    config.set_default_db_path(default_db_path);
+}
+
+void MainWindow::on_set_preview_size(PreviewGallery::PreviewSize size) {
+    config.set_preview_size(size);
+
+    gallery.set_preview_size(size);
+    refresh_gallery();
 }
 
 void MainWindow::on_file_chooser_response(int respone_id) {

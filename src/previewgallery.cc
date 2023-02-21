@@ -84,11 +84,12 @@ void PreviewGallery::set_content(const std::vector<Glib::ustring> &file_paths) {
     }
 }
 
-void PreviewGallery::set_size(PreviewSize size) {
+void PreviewGallery::set_preview_size(PreviewSize size) {
     this->size = size;
+    icon_view.set_item_width((int)size);
 }
 
-PreviewGallery::PreviewSize PreviewGallery::get_size() const {
+PreviewGallery::PreviewSize PreviewGallery::get_preview_size() const {
     return this->size;
 }
 

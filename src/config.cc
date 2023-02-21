@@ -36,8 +36,18 @@ const std::string &Config::get_default_db_path() {
     return default_db_path;
 }
 
+void Config::set_default_db_path(const std::string &path) {
+    default_db_path = path;
+    write_to_file();
+}
+
 PreviewGallery::PreviewSize Config::get_preview_size() {
     return size;
+}
+
+void Config::set_preview_size(PreviewGallery::PreviewSize size) {
+    this->size = size;
+    write_to_file();
 }
 
 void Config::write_to_file() {

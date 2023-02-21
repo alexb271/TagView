@@ -1,5 +1,6 @@
 // project
 #include "preferenceswindow.hh"
+#include "gtkmm/dialog.h"
 
 PreferencesWindow::PreferencesWindow() {
     // label setup
@@ -24,6 +25,10 @@ PreferencesWindow::PreferencesWindow() {
 
     medium.set_group(small);
     large.set_group(small);
+
+    small.signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWindow::on_toggled));
+    medium.signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWindow::on_toggled));
+    large.signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWindow::on_toggled));
 
     // box setup
     box.set_orientation(Gtk::Orientation::VERTICAL);
@@ -62,8 +67,52 @@ void PreferencesWindow::set_preview_size(PreviewGallery::PreviewSize size) {
     }
 }
 
-void PreferencesWindow::on_select_default_db() {
+sigc::signal<void (const std::string &)> PreferencesWindow::signal_select_defualt_db() {
+    return private_select_defualt_db;
+}
 
+sigc::signal<void (PreviewGallery::PreviewSize)> PreferencesWindow::signal_set_preview_size() {
+    return private_set_preview_size;
+}
+
+void PreferencesWindow::on_select_default_db() {
+    file_chooser = std::make_unique<Gtk::FileChooserDialog>("Choose a database file",
+            Gtk::FileChooser::Action::OPEN, true);
+    file_chooser->set_transient_for(*this);
+    file_chooser->set_modal(true);
+
+    file_chooser->add_button("Cancel", Gtk::ResponseType::CANCEL);
+    file_chooser->add_button("Select", Gtk::ResponseType::OK);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name("Text files");
+    filter->add_mime_type("text/plain");
+    file_chooser->add_filter(filter);
+
+    file_chooser->signal_response().connect(
+            sigc::mem_fun(*this, &PreferencesWindow::on_file_chooser_response));
+
+    file_chooser->show();
+}
+
+void PreferencesWindow::on_toggled() {
+    if (small.get_active()) {
+        private_set_preview_size.emit(PreviewGallery::PreviewSize::Small);
+    }
+    else if (medium.get_active()) {
+        private_set_preview_size.emit(PreviewGallery::PreviewSize::Medium);
+    }
+    else if (large.get_active()) {
+        private_set_preview_size.emit(PreviewGallery::PreviewSize::Large);
+    }
+}
+
+void PreferencesWindow::on_file_chooser_response(int respone_id) {
+    file_chooser->hide();
+    if (respone_id == Gtk::ResponseType::OK) {
+        lbl_default_db_path.set_text(file_chooser->get_file()->get_path());
+        private_select_defualt_db.emit(file_chooser->get_file()->get_path());
+    }
 }
 
 bool PreferencesWindow::on_close_request() {

@@ -47,8 +47,8 @@ class PreviewGallery : public Gtk::ScrolledWindow {
 
         // functions
         void set_content(const std::vector<Glib::ustring> &items);
-        void set_size(PreviewSize size);
-        PreviewSize get_size() const;
+        void set_preview_size(PreviewSize size);
+        PreviewSize get_preview_size() const;
         Glib::ustring get_file_path(const Gtk::TreePath &tpath) const;
 
         // signal forwarding
