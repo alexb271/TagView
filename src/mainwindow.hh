@@ -27,6 +27,7 @@
 #include "config.hh"
 #include "itemwindow.hh"
 #include "dbsettingswindow.hh"
+#include "preferenceswindow.hh"
 
 class MainWindow : public Gtk::ApplicationWindow {
     public:
@@ -57,6 +58,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         // other windows
         ItemWindow item_window;
         DbSettingsWindow db_settings_window;
+        PreferencesWindow preferences_window;
 
         // dialogs
         std::unique_ptr<Gtk::MessageDialog> message;
@@ -100,6 +102,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_add_items();
         void on_db_settings();
         void on_tag_picker_toggled();
+        void on_preferences();
         void on_about();
 
         // db settings window

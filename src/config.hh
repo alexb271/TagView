@@ -11,7 +11,7 @@ class Config {
         Config();
 
         const std::string &get_default_db_path();
-        PreviewGallery::PreviewSize get_size();
+        PreviewGallery::PreviewSize get_preview_size();
         void write_to_file();
 
     private:

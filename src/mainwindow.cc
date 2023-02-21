@@ -30,6 +30,7 @@ MainWindow::MainWindow()
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
     main_menu.signal_about().connect(sigc::mem_fun(*this, &MainWindow::on_about));
+    main_menu.signal_preferences().connect(sigc::mem_fun(*this, &MainWindow::on_preferences));
     main_menu.signal_test().connect(sigc::mem_fun(*this, &MainWindow::on_test));
 
     // configure header
@@ -52,7 +53,7 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_reload_default_exclude_required));
 
     // configure preview gallery
-    gallery.set_size(config.get_size());
+    gallery.set_size(config.get_preview_size());
     gallery.signal_item_chosen().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
     gallery.signal_item_selected().connect(
@@ -91,6 +92,10 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_directories_changed));
     db_settings_window.signal_exclude_tags_changed().connect(
             sigc::mem_fun(*this, &MainWindow::on_exclude_tags_changed));
+
+    // configure preferences window
+    preferences_window.set_default_db_path(config.get_default_db_path());
+    preferences_window.set_preview_size(config.get_preview_size());
 
     // configure window
     set_child(box);
@@ -141,6 +146,11 @@ void MainWindow::set_completer_data(const std::set<Glib::ustring> &completer_tag
         auto row = *(list_store->append());
         row[list_model.tag] = tag;
     }
+}
+
+void MainWindow::on_preferences() {
+    main_menu.hide();
+    preferences_window.show();
 }
 
 void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {

@@ -60,5 +60,9 @@ src_files = files(
 
                  # Window for managing database options, such as
                  # registered directories and tags excluded by default
-                 'dbsettingswindow.cc'
+                 'dbsettingswindow.cc',
+
+                 # Window for managing preferences, such as default
+                 # database and gallery preview size
+                 'preferenceswindow.cc'
                  )

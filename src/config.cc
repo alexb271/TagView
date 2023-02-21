@@ -36,7 +36,7 @@ const std::string &Config::get_default_db_path() {
     return default_db_path;
 }
 
-PreviewGallery::PreviewSize Config::get_size() {
+PreviewGallery::PreviewSize Config::get_preview_size() {
     return size;
 }
 
