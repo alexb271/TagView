@@ -52,6 +52,7 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_reload_default_exclude_required));
 
     // configure preview gallery
+    gallery.set_size(config.get_size());
     gallery.signal_item_chosen().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_item_chosen));
     gallery.signal_item_selected().connect(
@@ -96,6 +97,11 @@ MainWindow::MainWindow()
     set_title("TagView");
     set_size_request(455, 400);
     set_default_size(950, 800);
+
+    // load default config if it exists
+    if (config.get_default_db_path().size() > 0) {
+        load_database(config.get_default_db_path());
+    }
 }
 
 void MainWindow::load_database(std::string db_file_path) {

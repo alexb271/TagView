@@ -15,6 +15,9 @@ class Config {
         void write_to_file();
 
     private:
+        std::string conf_path;
         std::string default_db_path;
         PreviewGallery::PreviewSize size;
+
+        void parse_config();
 };
