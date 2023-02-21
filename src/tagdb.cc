@@ -1,6 +1,9 @@
 // standard library
+#include <map>
+#include <tuple>
 #include <algorithm>
 #include <filesystem>
+#include <utility>
 
 // project
 #include "tagdb.hh"
@@ -401,7 +404,6 @@ std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_incl
         // included in the query, add its file path
         // to the result
         if (item.is_tagged(tags_include)) {
-            // result.push_back(item.get_file_path());
             result_items.push_back(&item);
         }
     }
@@ -413,6 +415,55 @@ std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_incl
 
     for (const TagDb::Item *item : result_items) {
         result.push_back(prefix + item->get_file_path());
+    }
+
+    return result;
+}
+
+std::vector<Glib::ustring> TagDb::suggestions(const std::set<Glib::ustring> &tags_include) {
+    // perform a query and collect each tag every time it occurs in an item
+    std::vector<Glib::ustring> input_tags;
+    for (const TagDb::Item &item : items) {
+        // for exclude use the default exclude list
+        if (item.is_tagged(default_excluded_tags)) {
+            continue;
+        }
+
+        if (item.is_tagged(tags_include)) {
+            for (const Glib::ustring &tag : item.get_tags()) {
+                input_tags.push_back(tag);
+            }
+        }
+    }
+
+    // count the occurances of each tag
+    std::map<Glib::ustring, size_t> map_tag_count;
+    for (const Glib::ustring &tag : input_tags) {
+        if (map_tag_count.count(tag) == 0) {
+            map_tag_count[tag] = 1;
+        }
+        else {
+            map_tag_count.find(tag)->second += 1;
+        }
+    }
+
+    // copy the contents of the map into a vector for sorting
+    std::vector<std::tuple<Glib::ustring, size_t>> vec_tag_count;
+    for (const auto &item : map_tag_count) {
+        vec_tag_count.push_back(
+                std::tuple<Glib::ustring, size_t>(std::make_pair(item.first, item.second)));
+    }
+
+    // sort based on occurances so that the most frequent is at the beginning of the list
+    std::sort(vec_tag_count.begin(), vec_tag_count.end(),
+            [](const std::tuple<Glib::ustring, size_t> &a, const std::tuple<Glib::ustring, size_t> &b)
+            { return std::get<1>(a) > std::get<1>(b); });
+
+
+    // copy the sorted data into the final result
+    std::vector<Glib::ustring> result;
+    for (const auto &item : vec_tag_count) {
+        result.push_back(std::get<0>(item));
     }
 
     return result;

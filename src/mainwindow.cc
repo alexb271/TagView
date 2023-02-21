@@ -80,6 +80,8 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_edit_item));
     item_window.signal_delete_item().connect(
             sigc::mem_fun(*this, &MainWindow::on_delete_item));
+    item_window.signal_request_suggestions().connect(
+            sigc::mem_fun(*this, &MainWindow::on_request_suggestions));
 
     // configure dbsettings window
     db_settings_window.set_completer_model(list_store);
@@ -295,6 +297,10 @@ void MainWindow::on_edit_item(TagDb::Item item) {
     // refresh the gallery
     TagQuery query = tag_picker.get_current_query();
     gallery.set_content(db.query(query.tags_include, query.tags_exclude));
+}
+
+void MainWindow::on_request_suggestions(const std::set<Glib::ustring> &tags) {
+    item_window.set_suggestions(db.suggestions(tags));
 }
 
 void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file) {

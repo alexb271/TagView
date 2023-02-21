@@ -2,15 +2,15 @@
 #include <filesystem>
 
 // project
-#include "gtkmm/dialog.h"
-#include "gtkmm/messagedialog.h"
 #include "itemwindow.hh"
 
 ItemWindow::ItemWindow()
 :
+    tag_suggestions(ItemList::Type::OUTSIDE),
     default_directory("Database root"),
     in_edit_mode(false),
-    current_idx(0)
+    current_idx(0),
+    suggestion_count(5)
 {
     // label setup
     lbl_copy_to_dir.set_markup("<span weight=\"bold\" size=\"large\">Copy To Directory</span>");
@@ -31,6 +31,28 @@ ItemWindow::ItemWindow()
     tag_editor.set_halign(Gtk::Align::START);
     tag_editor.set_valign(Gtk::Align::START);
     tag_editor.set_size_request(-1, 200);
+    tag_editor.signal_contents_changed().connect(
+            sigc::mem_fun(*this, &ItemWindow::on_tag_editor_contents_changed));
+
+    // suggestions setup
+    lbl_suggestions.set_markup("<span weight=\"bold\" size=\"medium\">Suggestions</span>");
+    lbl_suggestions.set_margin_start(60);
+    lbl_suggestions.set_valign(Gtk::Align::END);
+    tag_suggestions.set_margin_start(60);
+    tag_suggestions.set_valign(Gtk::Align::END);
+    tag_suggestions.signal_add().connect(
+            sigc::mem_fun(*this, &ItemWindow::on_add_suggestion));
+
+    // suggestions are only shown if there are contents
+    lbl_suggestions.set_visible(false);
+    tag_suggestions.set_visible(false);
+
+    // editor grid setup
+    editor_grid.set_expand(false);
+    editor_grid.set_halign(Gtk::Align::START);
+    editor_grid.attach(tag_editor, 0, 0, 1, 2);
+    editor_grid.attach(lbl_suggestions, 1, 0);
+    editor_grid.attach(tag_suggestions, 1, 1);
 
     // checkbox setup
     chk_fav.set_label(" Favorite");
@@ -77,7 +99,7 @@ ItemWindow::ItemWindow()
     box.append(lbl_copy_to_dir);
     box.append(combo_dirs);
     box.append(chk_fav);
-    box.append(tag_editor);
+    box.append(editor_grid);
     box.append(buttons_mode_add);
 
     set_child(box);
@@ -101,6 +123,24 @@ void ItemWindow::set_directories(const std::set<Glib::ustring> &directories) {
 
 void ItemWindow::set_prefix(const std::string &prefix) {
     this->prefix = prefix;
+}
+
+void ItemWindow::set_suggestions(const std::vector<Glib::ustring> &tags) {
+    if (tags.size() == 0) {
+        lbl_suggestions.set_visible(false);
+        tag_suggestions.set_visible(false);
+        return;
+    }
+
+    size_t count = suggestion_count < tags.size() ? suggestion_count : tags.size();
+
+    tag_suggestions.clear();
+    for (size_t i = 0; i < count; i++) {
+        tag_suggestions.append(tags.at(i));
+    }
+
+    lbl_suggestions.set_visible(true);
+    tag_suggestions.set_visible(true);
 }
 
 void ItemWindow::add_items(const std::vector<std::string> &file_paths) {
@@ -136,6 +176,10 @@ sigc::signal<void (TagDb::Item)> ItemWindow::signal_edit_item() {
     return private_edit_item;
 }
 
+sigc::signal<void (const std::set<Glib::ustring> &)> ItemWindow::signal_request_suggestions() {
+    return private_request_suggestions;
+}
+
 sigc::signal<void (const Glib::ustring &, bool)> ItemWindow::signal_delete_item() {
     return private_delete_item;
 }
@@ -160,6 +204,9 @@ void ItemWindow::setup_for_add_item(size_t idx) {
 
     chk_fav.set_active(false);
     tag_editor.clear();
+    tag_suggestions.clear();
+    lbl_suggestions.set_visible(false);
+    tag_suggestions.set_visible(false);
 }
 
 void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
@@ -176,6 +223,7 @@ void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
     for (const Glib::ustring &tag : item.get_tags()) {
         tag_editor.add_tag(tag);
     }
+    private_request_suggestions.emit(tag_editor.get_content());
 }
 
 bool ItemWindow::copy(const std::string &file_path) {
@@ -236,6 +284,14 @@ void ItemWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->signal_response().connect(
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
         message->show();
+}
+
+void ItemWindow::on_tag_editor_contents_changed(const std::set<Glib::ustring> &tags) {
+    private_request_suggestions.emit(tag_editor.get_content());
+}
+
+void ItemWindow::on_add_suggestion(const Glib::ustring &tag) {
+    tag_editor.add_tag(tag);
 }
 
 void ItemWindow::on_add() {

@@ -100,9 +100,8 @@ class TagDb {
         std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
 
-        std::vector<Glib::ustring> top_tags(const std::vector<Glib::ustring> &tags_include,
-                                            const std::vector<Glib::ustring> &tags_exclude,
-                                            unsigned int count) const;
+        std::vector<Glib::ustring> suggestions(const std::set<Glib::ustring> &tags_include);
+
     private:
         // member variables
         std::string db_file_path;
@@ -112,6 +111,6 @@ class TagDb {
         std::set<Glib::ustring> default_excluded_tags;
 
         // functions
-        bool str_starts_with(const std::string &str, const std::string &argument);
         std::set<Glib::ustring> parse_tags(const std::string &str);
+        bool str_starts_with(const std::string &str, const std::string &argument);
 };

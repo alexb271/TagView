@@ -218,7 +218,7 @@ TagPickerBase::TagPickerBase(bool label_below_entry)
     append(tags);
 
     set_orientation(Gtk::Orientation::VERTICAL);
-    set_spacing(30);
+    set_spacing(20);
     set_hexpand(false);
 }
 

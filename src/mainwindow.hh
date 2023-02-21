@@ -105,6 +105,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_add_item(TagDb::Item item);
         void on_edit_item(TagDb::Item item);
         void on_delete_item(const Glib::ustring &file_path, bool delete_file);
+        void on_request_suggestions(const std::set<Glib::ustring> &tags);
 
         // dialog responses
         void on_file_chooser_response(int respone_id);

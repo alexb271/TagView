@@ -8,6 +8,7 @@
 #include <gtkmm/window.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/box.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
@@ -26,6 +27,7 @@ class ItemWindow : public Gtk::Window {
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void set_directories(const std::set<Glib::ustring> &directories);
         void set_prefix(const std::string &prefix);
+        void set_suggestions(const std::vector<Glib::ustring> &tags);
 
         void add_items(const std::vector<std::string> &file_paths);
         void edit_item(const TagDb::Item &item);
@@ -34,6 +36,7 @@ class ItemWindow : public Gtk::Window {
         sigc::signal<void (TagDb::Item)> signal_add_item();
         sigc::signal<void (TagDb::Item)> signal_edit_item();
         sigc::signal<void (const Glib::ustring &, bool)> signal_delete_item();
+        sigc::signal<void (const std::set<Glib::ustring> &)> signal_request_suggestions();
 
     private: class DeleteDialog : public Gtk::MessageDialog {
                  public:
@@ -52,7 +55,12 @@ class ItemWindow : public Gtk::Window {
         Gtk::Label lbl_copy_to_dir;
         Gtk::ComboBoxText combo_dirs;
         Gtk::CheckButton chk_fav;
+
+        // tag editor with suggestions
+        Gtk::Grid editor_grid;
         TagPickerBase tag_editor;
+        Gtk::Label lbl_suggestions;
+        ItemList tag_suggestions;
 
         Gtk::Box buttons_mode_add;
         Gtk::Button btn_skip;
@@ -77,6 +85,9 @@ class ItemWindow : public Gtk::Window {
         std::vector<std::string> items_to_add;
         size_t current_idx;
 
+        // max number of suggestions to show
+        size_t suggestion_count;
+
         // functions
         void setup_for_add_item(size_t idx);
         void setup_for_edit_item(const TagDb::Item &item);
@@ -85,6 +96,8 @@ class ItemWindow : public Gtk::Window {
         void show_warning(Glib::ustring primary, Glib::ustring secondary);
 
         // signal handlers
+        void on_tag_editor_contents_changed(const std::set<Glib::ustring> &tags);
+        void on_add_suggestion(const Glib::ustring &tag);
         void on_add();
         void on_skip();
         void on_edit();
@@ -96,4 +109,5 @@ class ItemWindow : public Gtk::Window {
         sigc::signal<void (TagDb::Item)> private_add_item;
         sigc::signal<void (TagDb::Item)> private_edit_item;
         sigc::signal<void (const Glib::ustring &, bool)> private_delete_item;
+        sigc::signal<void (const std::set<Glib::ustring> &)> private_request_suggestions;
 };
