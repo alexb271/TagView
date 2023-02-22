@@ -14,6 +14,8 @@ The code is written in C++ using gtkmm.
 
 ## Compiling
 
+You need to have gtkmm-4.6 or higher in order to build the project.
+
 The project can be compiled with Meson:
 
     mkdir build
