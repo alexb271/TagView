@@ -32,6 +32,7 @@ src_files = files(
                  # a GtkEntry with completion and different sections for
                  # tags in relation to the query, such as included,
                  # excluded or the tags of the currently selected image.
+                 # It is derived from a base class defined in tagutils.cc
                  'tagpicker.cc',
 
                  # This object is responsible for the implementation
@@ -39,15 +40,14 @@ src_files = files(
                  # sections in the Tag Picker. Tags are derived from
                  # GtkBox and typically contain a label with the tag's
                  # name and buttons for actions such as add or exclude.
-                 # It also contains implementation of a dynamic list
+                 # It also contains an implementation of a dynamic list
                  # of tags as widgets and a base class for tag pickers
-                 # to build on
                  'tagutils.cc',
 
                  # The database in the backend. It can load from a file
                  # as well as write to a file and it is responsible for
-                 # actually fulfilling the queries based on tags set
-                 # buy the user in the Tag Picker widget.
+                 # handling the queries based on tags set by the user
+                 # in the Tag Picker widget.
                  'tagdb.cc',
 
                  # A small class for loading a configuration file from
@@ -55,7 +55,8 @@ src_files = files(
                  # rest of the program
                  'config.cc',
 
-                 # Window for adding images to the database.
+                 # Window for adding images to the database and
+                 # editing items already in the database
                  'itemwindow.cc',
 
                  # Window for managing database options, such as

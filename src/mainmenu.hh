@@ -27,7 +27,6 @@ class MainMenu : public Gtk::Popover {
         Glib::SignalProxy<void()> signal_show_tag_picker_toggled();
         Glib::SignalProxy<void()> signal_preferences();
         Glib::SignalProxy<void()> signal_about();
-        Glib::SignalProxy<void()> signal_test();
 
     private:
         // main box to pack things into
@@ -43,5 +42,4 @@ class MainMenu : public Gtk::Popover {
         Gtk::Separator sep_2;
         Gtk::Button button_preferences;
         Gtk::Button button_about;
-        Gtk::Button button_test;
 };

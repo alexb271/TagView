@@ -80,7 +80,8 @@ class TagDb {
     public:
         TagDb();
 
-        void load_from_file(std::string db_file_path);
+        void create_database(const std::string &db_file_path);
+        void load_from_file(const std::string &db_file_path);
         void write_to_file() const;
 
         void add_item(Item &item);

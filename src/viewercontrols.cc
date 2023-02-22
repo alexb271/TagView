@@ -10,11 +10,16 @@ ViewerControls::ViewerControls() {
 
     // configure buttons
     button_zoom_original.set_icon_name("zoom-original-symbolic");
+    button_zoom_original.set_tooltip_text("Actual size");
     button_zoom_original.set_margin_end(10);
     button_zoom_out.set_icon_name("zoom-out-symbolic");
+    button_zoom_out.set_tooltip_text("Zoom out");
     button_zoom_reset.set_icon_name("zoom-fit-best-symbolic");
+    button_zoom_reset.set_tooltip_text("Fit to screen");
     button_zoom_in.set_icon_name("zoom-in-symbolic");
+    button_zoom_in.set_tooltip_text("Zoom in");
     button_hide_viewer.set_icon_name("go-previous-symbolic");
+    button_hide_viewer.set_tooltip_text("Back");
     button_hide_viewer.set_margin_start(15);
 
     // append buttons

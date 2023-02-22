@@ -20,7 +20,8 @@ class DbSettingsWindow : public Gtk::Window {
         DbSettingsWindow();
 
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
-        void setup(const std::set<Glib::ustring> &directories,
+        void setup(const Glib::ustring &db_path,
+                   const std::set<Glib::ustring> &directories,
                    const std::set<Glib::ustring> &default_exclude_tags,
                    const std::string &prefix);
         sigc::signal<void (const std::set<Glib::ustring> &)> signal_exclude_tags_changed();
@@ -29,6 +30,7 @@ class DbSettingsWindow : public Gtk::Window {
     private:
         // widgets
         Gtk::Box box;
+        Gtk::Label lbl_db_path;
         Gtk::Button btn_add_dir;
         Gtk::Label lbl_dirs;
         ItemList dirs;

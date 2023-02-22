@@ -1,9 +1,7 @@
-// gtkmm
-#include <gtkmm/messagedialog.h>
+// standard library
+#include <filesystem>
 
 // project
-#include "gtkmm/dialog.h"
-#include "gtkmm/enums.h"
 #include "mainwindow.hh"
 
 MainWindow::MainWindow()
@@ -25,13 +23,13 @@ MainWindow::MainWindow()
     button_main_menu.set_direction(Gtk::ArrowType::NONE);
     button_main_menu.set_popover(main_menu);
     main_menu.signal_load_database().connect(sigc::mem_fun(*this, &MainWindow::on_load_database));
+    main_menu.signal_create_database().connect(sigc::mem_fun(*this, &MainWindow::on_create_database));
     main_menu.signal_add_items().connect(sigc::mem_fun(*this, &MainWindow::on_add_items));
     main_menu.signal_db_settings().connect(sigc::mem_fun(*this, &MainWindow::on_db_settings));
     main_menu.signal_show_tag_picker_toggled().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_picker_toggled));
     main_menu.signal_about().connect(sigc::mem_fun(*this, &MainWindow::on_about));
     main_menu.signal_preferences().connect(sigc::mem_fun(*this, &MainWindow::on_preferences));
-    main_menu.signal_test().connect(sigc::mem_fun(*this, &MainWindow::on_test));
 
     // configure header
     header.set_show_title_buttons(true);
@@ -113,7 +111,7 @@ MainWindow::MainWindow()
     }
 }
 
-void MainWindow::load_database(std::string db_file_path) {
+void MainWindow::load_database(const std::string &db_file_path) {
     try {
         db.load_from_file(db_file_path);
     }
@@ -130,15 +128,28 @@ void MainWindow::load_database(std::string db_file_path) {
     }
 
     set_completer_data(db.get_all_tags());
-    on_reload_default_exclude_required(); // load default excluded tags to tag_picer
-    db_settings_window.setup(db.get_directories(), db.get_default_excluded_tags(), db.get_prefix());
+
+    // load default excluded tags to tag_picer
+    tag_picker.clear_excluded_tags();
+    on_reload_default_exclude_required();
+
+    db_settings_window.setup(db_file_path,
+                             db.get_directories(),
+                             db.get_default_excluded_tags(),
+                             db.get_prefix());
+
     item_window.set_directories(db.get_directories());
     item_window.set_prefix(db.get_prefix());
+
     main_menu.set_show_database_controls(true);
 
     if (gallery.is_visible()) {
         refresh_gallery();
     }
+}
+
+void MainWindow::add_items(const std::vector<std::string> &file_paths) {
+    item_window.add_items(file_paths);
 }
 
 void MainWindow::set_completer_data(const std::set<Glib::ustring> &completer_tags) {
@@ -265,20 +276,58 @@ void MainWindow::on_load_database() {
     file_chooser->add_filter(filter);
 
     file_chooser->signal_response().connect(
-            sigc::mem_fun(*this, &MainWindow::on_file_chooser_response));
+            sigc::bind(sigc::mem_fun(*this, &MainWindow::on_file_chooser_response), Action::LOAD));
+
+    file_chooser->show();
+}
+
+void MainWindow::on_create_database() {
+    main_menu.hide();
+
+    file_chooser = std::make_unique<Gtk::FileChooserDialog>("Choose database root directory",
+            Gtk::FileChooser::Action::SELECT_FOLDER, true);
+    file_chooser->set_transient_for(*this);
+    file_chooser->set_modal(true);
+
+    file_chooser->add_button("Cancel", Gtk::ResponseType::CANCEL);
+    file_chooser->add_button("Select", Gtk::ResponseType::OK);
+
+    file_chooser->signal_response().connect(
+            sigc::bind(sigc::mem_fun(*this, &MainWindow::on_file_chooser_response), Action::CREATE));
 
     file_chooser->show();
 }
 
 void MainWindow::on_add_items() {
     main_menu.hide();
-    std::vector<std::string> files;
-    files.push_back("/home/user/cat.jpg");
-    files.push_back("/home/user/Code/Gtk/TagView/TestGallery/screenshot.png");
-    files.push_back("/home/user/falcon.jpg");
-    files.push_back("/home/user/tropical.jpeg");
-    files.push_back("/does_not_exist");
-    item_window.add_items(files);
+
+    file_chooser = std::make_unique<Gtk::FileChooserDialog>("Choose files to add",
+            Gtk::FileChooser::Action::OPEN, true);
+    file_chooser->set_select_multiple(true);
+    file_chooser->set_transient_for(*this);
+    file_chooser->set_modal(true);
+
+    file_chooser->add_button("Cancel", Gtk::ResponseType::CANCEL);
+    file_chooser->add_button("Select", Gtk::ResponseType::OK);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name("Image files");
+    filter->add_mime_type("image/png");
+    filter->add_mime_type("image/jpg");
+    filter->add_mime_type("image/jpeg");
+    filter->add_mime_type("image/tiff");
+    filter->add_mime_type("image/gif");
+    file_chooser->add_filter(filter);
+
+    auto filter_all = Gtk::FileFilter::create();
+    filter_all->set_name("All Files");
+    filter_all->add_pattern("*");
+    file_chooser->add_filter(filter_all);
+
+    file_chooser->signal_response().connect(
+            sigc::bind(sigc::mem_fun(*this, &MainWindow::on_file_chooser_response), Action::ADD));
+
+    file_chooser->show();
 }
 
 void MainWindow::on_db_settings() {
@@ -362,18 +411,45 @@ void MainWindow::on_set_preview_size(PreviewGallery::PreviewSize size) {
     refresh_gallery();
 }
 
-void MainWindow::on_file_chooser_response(int respone_id) {
+void MainWindow::on_file_chooser_response(int respone_id, MainWindow::Action action) {
     file_chooser->hide();
-    if (respone_id == Gtk::ResponseType::OK) {
-        load_database(file_chooser->get_file()->get_path());
+    switch (action) {
+        case MainWindow::Action::LOAD: {
+            if (respone_id == Gtk::ResponseType::OK) {
+                load_database(file_chooser->get_file()->get_path());
+            }
+            break;
+        }
+        case MainWindow::Action::CREATE: {
+            if (respone_id == Gtk::ResponseType::OK) {
+                std::string db_path = file_chooser->get_file()->get_path() + "/TagView.txt";
+                if (std::filesystem::exists(db_path)) {
+                    show_warning("Error Creating Database",
+                                 "A database file already exists at the chosen location.");
+                }
+                else {
+                    db.create_database(db_path);
+                    load_database(db_path);
+                }
+            }
+            break;
+        }
+        case MainWindow::Action::ADD: {
+            if (respone_id == Gtk::ResponseType::OK) {
+                std::vector<std::string> file_paths;
+
+                // the gtkmm wrapper is a garbage fire when it comes to multiple files
+                // from a FileChooserDialog, use C API instead
+                GListModel *files = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(file_chooser->gobj()));
+                size_t files_size = g_list_model_get_n_items(files);
+                for (size_t idx = 0; idx < files_size; idx++) {
+                    GFile *file = (GFile *)g_list_model_get_item(files, idx);
+                    file_paths.push_back(g_file_get_path(file));
+                }
+
+                add_items(file_paths);
+            }
+            break;
+        }
     }
-}
-
-void MainWindow::on_test() {
-    main_menu.hide();
-
-    load_database("/home/user/Code/Gtk/TagView/TestGallery/database.txt");
-}
-
-MainWindow::~MainWindow() {
 }

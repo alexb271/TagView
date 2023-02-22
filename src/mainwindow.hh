@@ -33,9 +33,11 @@ class MainWindow : public Gtk::ApplicationWindow {
     public:
         // ctor
         MainWindow();
-        ~MainWindow() override;
 
     private:
+        // file chooser action
+        enum class Action { LOAD, CREATE, ADD };
+
         // members for providing entry completion
         Glib::RefPtr<Gtk::ListStore> list_store;
         TagPickerBase::ListModel list_model;
@@ -77,7 +79,8 @@ class MainWindow : public Gtk::ApplicationWindow {
         size_t files_idx;
 
         // fucntions
-        void load_database(std::string db_file_path);
+        void load_database(const std::string &db_file_path);
+        void add_items(const std::vector<std::string> &file_paths);
         void set_completer_data(const std::set<Glib::ustring> &completer_tags);
         void show_warning(Glib::ustring primary, Glib::ustring secondary);
         void refresh_gallery();
@@ -100,6 +103,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 
         // main menu
         void on_load_database();
+        void on_create_database();
         void on_add_items();
         void on_db_settings();
         void on_tag_picker_toggled();
@@ -121,8 +125,5 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_set_preview_size(PreviewGallery::PreviewSize size);
 
         // dialog responses
-        void on_file_chooser_response(int respone_id);
-
-        // other
-        void on_test();
+        void on_file_chooser_response(int respone_id, Action action);
 };

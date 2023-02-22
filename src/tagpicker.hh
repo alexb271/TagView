@@ -20,6 +20,7 @@ class TagPicker : public TagPickerBase {
         TagQuery get_current_query() const;
         void add_excluded_tag(const Glib::ustring &tag);
         void set_current_item_tags(const std::set<Glib::ustring> &tags);
+        void clear_excluded_tags();
         void clear_current_item_tags();
 
         // signal forwarding

@@ -36,6 +36,7 @@ DbSettingsWindow::DbSettingsWindow()
     box.set_spacing(30);
     box.set_orientation(Gtk::Orientation::VERTICAL);
 
+    box.append(lbl_db_path);
     box.append(lbl_dirs);
     box.append(dirs);
     box.append(btn_add_dir);
@@ -53,10 +54,13 @@ void DbSettingsWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> complete
     tp_exclude.set_completer_model(completer_list);
 }
 
-void DbSettingsWindow::setup(const std::set<Glib::ustring> &directories,
+void DbSettingsWindow::setup(const Glib::ustring &db_path,
+                             const std::set<Glib::ustring> &directories,
                              const std::set<Glib::ustring> &default_exclude_tags,
                              const std::string &prefix)
 {
+    lbl_db_path.set_text(db_path);
+
     dirs.clear();
     for (const Glib::ustring &dir : directories) {
         dirs.append(dir);

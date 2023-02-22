@@ -6,6 +6,8 @@
 
 TagView is a tagging image viewer. It allows searching for images based on tags, adding tags to the query from those of the currently viewed image and excluding images with the specified tags.
 
+Databases can be managed from within the app, such as adding and editing image tags, setting tags to be excluded by default and marking images as favorite to sort them before others.
+
 While my aim is to build a functional application, this project is first and foremost coding practice for me, and aspects such as looks, hotkeys or optimal UI layout are not a primary concern.
 
 The code is written in C++ using gtkmm.

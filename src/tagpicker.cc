@@ -24,6 +24,7 @@ TagPicker::TagPicker()
 
     // button setup
     btn_reload_default_exclude.set_icon_name("view-refresh-symbolic");
+    btn_reload_default_exclude.set_tooltip_text("Reload default");
     btn_reload_default_exclude.set_halign(Gtk::Align::CENTER);
     btn_reload_default_exclude.set_has_frame(false);
 
@@ -51,6 +52,10 @@ void TagPicker::set_current_item_tags(const std::set<Glib::ustring> &tags) {
     for (const Glib::ustring &tag : tags) {
         tags_current_item.append(tag);
     }
+}
+
+void TagPicker::clear_excluded_tags() {
+    tags_exclude.clear();
 }
 
 void TagPicker::clear_current_item_tags() {

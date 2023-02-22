@@ -126,7 +126,20 @@ std::ostream& operator<<(std::ostream &os, TagDb::Item item) {
 TagDb::TagDb()
 {}
 
-void TagDb::load_from_file(std::string db_file_path) {
+void TagDb::create_database(const std::string &db_file_path) {
+    std::ofstream output(db_file_path);
+    if (output.good()) {
+        output << "[TagView database file]" << std::endl;
+    }
+
+    output.close();
+}
+
+void TagDb::load_from_file(const std::string &db_file_path) {
+    // clear existing data
+    default_excluded_tags.clear();
+    directories.clear();
+
     // variables for reading from file
     std::string line;
     std::ifstream input(db_file_path);
@@ -245,6 +258,8 @@ void TagDb::load_from_file(std::string db_file_path) {
         // add new item
         items.push_back(TagDb::Item(file_path, type, tags, favorite));
     }
+
+    input.close();
 }
 
 void TagDb::write_to_file() const {
