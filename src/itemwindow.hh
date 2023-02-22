@@ -13,7 +13,7 @@
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
-#include <gtkmm/picture.h>
+#include <gtkmm/image.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/messagedialog.h>
@@ -52,7 +52,11 @@ class ItemWindow : public Gtk::Window {
         // widgets
         Gtk::Box box;
         Gtk::Label lbl_item_path;
-        Gtk::Picture item_picture;
+
+        // preview
+        Gtk::Label item_preview_error;
+        Gtk::Image item_preview;
+
         Gtk::Label lbl_copy_to_dir;
         Gtk::ComboBoxText combo_dirs;
         Gtk::CheckButton chk_fav;
@@ -88,10 +92,12 @@ class ItemWindow : public Gtk::Window {
 
         // max number of suggestions to show
         size_t suggestion_count;
+        int preview_size;
 
         // functions
         void setup_for_add_item(size_t idx);
         void setup_for_edit_item(const TagDb::Item &item);
+        bool set_preview(const Glib::ustring &file_path);
         bool copy(const std::string &file_path);
         TagDb::Item create_db_item(size_t idx);
         void show_warning(Glib::ustring primary, Glib::ustring secondary);

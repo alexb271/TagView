@@ -10,17 +10,22 @@ ItemWindow::ItemWindow()
     default_directory("Database root"),
     in_edit_mode(false),
     current_idx(0),
-    suggestion_count(5)
+    suggestion_count(5),
+    preview_size(256)
 {
     // label setup
     lbl_copy_to_dir.set_markup("<span weight=\"bold\" size=\"large\">Copy To Directory</span>");
     lbl_copy_to_dir.set_halign(Gtk::Align::START);
 
-    // picture setup
-    item_picture.set_can_shrink(true);
-    item_picture.set_size_request(256, 256);
-    item_picture.set_margin_top(10);
-    item_picture.set_margin_bottom(10);
+    // preview setup
+    item_preview_error.set_markup("<span weight=\"bold\" size=\"large\">Error loading preview</span>");
+    item_preview_error.set_margin_top(10);
+    item_preview_error.set_margin_bottom(10);
+    item_preview_error.set_visible(false);
+    item_preview.set_size_request(preview_size, preview_size);
+    item_preview.set_margin_top(10);
+    item_preview.set_margin_bottom(10);
+    item_preview.set_visible(false);
 
     // combo box setup
     combo_dirs.set_halign(Gtk::Align::START);
@@ -98,7 +103,8 @@ ItemWindow::ItemWindow()
 
     // append items to box
     box.append(lbl_item_path);
-    box.append(item_picture);
+    box.append(item_preview_error);
+    box.append(item_preview);
     box.append(lbl_copy_to_dir);
     box.append(combo_dirs);
     box.append(chk_fav);
@@ -107,7 +113,7 @@ ItemWindow::ItemWindow()
 
     set_child(box);
     set_size_request(200, 200);
-    set_default_size(400, 400);
+    set_default_size(400, 600);
 }
 
 void ItemWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
@@ -202,7 +208,7 @@ sigc::signal<void (const Glib::ustring &, bool)> ItemWindow::signal_delete_item(
 void ItemWindow::setup_for_add_item(size_t idx) {
     set_title(std::to_string(idx + 1) + "/" + std::to_string(items_to_add.size()));
     lbl_item_path.set_text(items_to_add.at(idx));
-    item_picture.set_filename(items_to_add.at(idx));
+    set_preview(items_to_add.at(idx));
 
 
     // do not copy if file is already in a valid subdirectory
@@ -231,7 +237,7 @@ void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
 {
     set_title("Edit Item");
     lbl_item_path.set_text(item.get_file_path());
-    item_picture.set_filename(prefix + item.get_file_path());
+    set_preview(prefix + item.get_file_path());
     chk_fav.set_active(item.get_favorite());
 
     lbl_copy_to_dir.set_visible(false);
@@ -242,6 +248,35 @@ void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
         tag_editor.add_tag(tag);
     }
     private_request_suggestions.emit(tag_editor.get_content());
+}
+
+bool ItemWindow::set_preview(const Glib::ustring &file_path) {
+    Glib::RefPtr<Gdk::Pixbuf> pbuf;
+    try {
+        pbuf = Gdk::Pixbuf::create_from_file(file_path);
+    }
+    catch (...) {
+        item_preview_error.set_visible(true);
+        item_preview.set_visible(false);
+        return false;
+    }
+
+    // calculate scale proportion based on the longer dimension
+    int image_size = pbuf->get_width() > pbuf->get_height() ? pbuf->get_width() : pbuf->get_height();
+    double prop = (double)(preview_size) / (double)image_size;
+
+
+    // scale image by proportion
+    pbuf = pbuf->scale_simple(
+            std::round(pbuf->get_width() * prop),
+            std::round(pbuf->get_height() * prop),
+            Gdk::InterpType::BILINEAR);
+
+    item_preview.set(pbuf);
+
+    item_preview_error.set_visible(false);
+    item_preview.set_visible(true);
+    return true;
 }
 
 bool ItemWindow::copy(const std::string &file_path) {
