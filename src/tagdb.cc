@@ -290,6 +290,7 @@ void TagDb::write_to_file() const {
 }
 
 void TagDb::add_item(TagDb::Item &item) {
+
     // remove entry if it already in the database
     for (size_t idx = 0; idx < items.size(); idx++) {
         if (items[idx].get_file_path() == item.get_file_path()) {

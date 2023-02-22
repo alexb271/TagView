@@ -175,6 +175,7 @@ void MainWindow::refresh_gallery() {
     TagQuery query = tag_picker.get_current_query();
     files = db.query(query.tags_include, query.tags_exclude);
     gallery.set_content(files);
+    tag_picker.clear_current_item_tags();
 }
 
 bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state) {
@@ -385,8 +386,6 @@ void MainWindow::on_edit_item(TagDb::Item item) {
     db.edit_item(item);
     set_completer_data(db.get_all_tags());
 
-    tag_picker.set_current_item_tags(db.get_tags_for_item(db.get_prefix() + item.get_file_path()));
-
     refresh_gallery();
 }
 
@@ -396,6 +395,7 @@ void MainWindow::on_request_suggestions(const std::set<Glib::ustring> &tags) {
 
 void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file) {
     db.delete_item(file_path, delete_file);
+    set_completer_data(db.get_all_tags());
 
     refresh_gallery();
 }

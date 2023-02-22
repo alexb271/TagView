@@ -70,6 +70,7 @@ ItemWindow::ItemWindow()
             sigc::mem_fun(*this, &ItemWindow::on_add));
 
     buttons_mode_add.set_orientation(Gtk::Orientation::HORIZONTAL);
+    buttons_mode_add.set_valign(Gtk::Align::END);
     buttons_mode_add.append(btn_skip);
     buttons_mode_add.append(btn_add);
 
@@ -86,6 +87,7 @@ ItemWindow::ItemWindow()
             sigc::mem_fun(*this, &ItemWindow::on_edit));
 
     buttons_mode_edit.set_orientation(Gtk::Orientation::HORIZONTAL);
+    buttons_mode_edit.set_valign(Gtk::Align::END);
     buttons_mode_edit.append(btn_delete);
     buttons_mode_edit.append(btn_edit);
 
@@ -105,7 +107,7 @@ ItemWindow::ItemWindow()
 
     set_child(box);
     set_size_request(200, 200);
-    set_default_size(400, 600);
+    set_default_size(400, 400);
 }
 
 void ItemWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
@@ -201,18 +203,21 @@ void ItemWindow::setup_for_add_item(size_t idx) {
     set_title(std::to_string(idx + 1) + "/" + std::to_string(items_to_add.size()));
     lbl_item_path.set_text(items_to_add.at(idx));
     item_picture.set_filename(items_to_add.at(idx));
-    lbl_copy_to_dir.set_visible(true);
-    combo_dirs.set_visible(true);
-    combo_dirs.set_active(0);
+
 
     // do not copy if file is already in a valid subdirectory
     if (items_to_add.at(idx).rfind(prefix, 0) == 0) {
-        combo_dirs.set_sensitive(false);
         item_starts_with_prefix = true;
+
+        lbl_copy_to_dir.set_visible(false);
+        combo_dirs.set_visible(false);
     }
     else {
-        combo_dirs.set_sensitive(true);
         item_starts_with_prefix = false;
+
+        lbl_copy_to_dir.set_visible(true);
+        combo_dirs.set_visible(true);
+        combo_dirs.set_active(0);
     }
 
     chk_fav.set_active(false);
@@ -276,15 +281,25 @@ bool ItemWindow::copy(const std::string &file_path) {
 }
 
 TagDb::Item ItemWindow::create_db_item(size_t idx) {
-    // item name is the part of the path after the last /
-    std::string item_name = items_to_add.at(idx).substr(items_to_add.at(idx).find_last_of("/") + 1);
+    std::string item_path;
+    if (item_starts_with_prefix) {
+        // if the full path starts with the prefix, then the
+        // relative path is everything after the prefix
+        item_path = items_to_add.at(idx).substr(prefix.size());
+    }
+    else {
+        // item name is the part of the path after the last /
+        std::string item_name = items_to_add.at(idx).substr(items_to_add.at(idx).find_last_of("/") + 1);
 
-    // configure directory
-    std::string dir = combo_dirs.get_active_text();
-    if (dir == default_directory) { dir = ""; }
-    else { dir = dir + "/"; }
+        // configure directory
+        std::string dir = combo_dirs.get_active_text();
+        if (dir == default_directory) { dir = ""; }
+        else { dir = dir + "/"; }
 
-    return TagDb::Item(dir + item_name, TagDb::Item::Type::image,
+        item_path = dir + item_name;
+    }
+
+    return TagDb::Item(item_path, TagDb::Item::Type::image,
                        tag_editor.get_content(), chk_fav.get_active());
 }
 
@@ -314,9 +329,6 @@ void ItemWindow::on_add() {
         return;
     }
 
-    if (current_idx == items_to_add.size() - 1) {
-        hide();
-    }
     else {
         bool result = true;
         if (!item_starts_with_prefix) {
@@ -324,8 +336,14 @@ void ItemWindow::on_add() {
         }
         if (result) {
             private_add_item.emit(create_db_item(current_idx));
+
             current_idx += 1;
-            setup_for_add_item(current_idx);
+            if (current_idx == items_to_add.size()) {
+                hide();
+            }
+            else {
+                setup_for_add_item(current_idx);
+            }
         }
     }
 }
