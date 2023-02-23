@@ -76,6 +76,7 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
 
     buttons_mode_add.set_orientation(Gtk::Orientation::HORIZONTAL);
     buttons_mode_add.set_valign(Gtk::Align::END);
+    buttons_mode_add.set_expand(false);
     buttons_mode_add.append(btn_skip);
     buttons_mode_add.append(btn_add);
 
@@ -93,6 +94,7 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
 
     buttons_mode_edit.set_orientation(Gtk::Orientation::HORIZONTAL);
     buttons_mode_edit.set_valign(Gtk::Align::END);
+    buttons_mode_edit.set_expand(false);
     buttons_mode_edit.append(btn_delete);
     buttons_mode_edit.append(btn_edit);
 

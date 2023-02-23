@@ -9,7 +9,8 @@ MainWindow::MainWindow()
     item_window(*this),
     db_settings_window(*this),
     preferences_window(*this),
-    key_controller(Gtk::EventControllerKey::create())
+    key_controller(Gtk::EventControllerKey::create()),
+    switching_allowed(true)
 {
     // configure image viewer controls
     viewer_controls.signal_zoom_out().connect(sigc::mem_fun(viewer, &ImageViewer::zoom_out));
@@ -190,7 +191,7 @@ bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType s
     }
 
     // viewer image switching
-    if (viewer.get_visible()) {
+    if (viewer.get_visible() && switching_allowed) {
         if (keycode == 9) { // escape key
             on_hide_viewer();
         }
@@ -218,6 +219,10 @@ void MainWindow::on_tag_query_changed(TagQuery tag_selection) {
     gallery.set_content(files);
     if (!viewer.get_visible()) {
         tag_picker.clear_current_item_tags();
+        switching_allowed = true;
+    }
+    else {
+        switching_allowed = false;
     }
 }
 
@@ -226,6 +231,9 @@ void MainWindow::on_reload_default_exclude_required() {
         tag_picker.add_excluded_tag(tag);
     }
     refresh_gallery();
+    if (viewer.get_visible()) {
+        switching_allowed = false;
+    }
 }
 
 void MainWindow::on_gallery_item_chosen(size_t id) {
@@ -255,6 +263,7 @@ void MainWindow::on_gallery_edit(const Glib::ustring &file_path) {
 }
 
 void MainWindow::on_hide_viewer() {
+    switching_allowed = true;
     TagQuery query = tag_picker.get_current_query();
     if (query.tags_include.size() == 0) {
         tag_picker.clear_current_item_tags();
@@ -405,6 +414,7 @@ void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file
     db.delete_item(file_path, delete_file);
     set_completer_data(db.get_all_tags());
 
+    gallery.clear_cache();
     refresh_gallery();
 }
 

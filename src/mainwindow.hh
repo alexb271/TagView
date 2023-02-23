@@ -77,6 +77,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         // members for switching images in image viewer
         std::vector<Glib::ustring> files;
         size_t files_idx;
+        bool switching_allowed;
 
         // fucntions
         void load_database(const std::string &db_file_path);

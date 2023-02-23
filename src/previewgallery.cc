@@ -97,6 +97,14 @@ Glib::ustring PreviewGallery::get_file_path(const Gtk::TreePath &tpath) const {
     return (*(store->get_iter(tpath)))[icon_model.file_path];
 }
 
+void PreviewGallery::clear_cache() {
+    preview_cache.clear();
+}
+
+void PreviewGallery::grab_focus() {
+    icon_view.grab_focus();
+}
+
 Glib::SignalProxy<void (const Gtk::TreeModel::Path &)> PreviewGallery::signal_item_activated() {
     return icon_view.signal_item_activated();
 }
@@ -121,11 +129,20 @@ bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path) {
     // get pixbuf from file path
     Glib::RefPtr<Gdk::Pixbuf> pbuf;
 
-    try {
-        pbuf = Gdk::Pixbuf::create_from_file(file_path);
+    // check if preview image is cached
+    // else load image and store it in cache
+    auto iter = preview_cache.find(file_path);
+    if (iter != preview_cache.end()) {
+        pbuf = iter->second;
     }
-    catch (...) {
-        return false;
+    else {
+        try {
+            pbuf = Gdk::Pixbuf::create_from_file(file_path);
+            preview_cache.insert(std::make_pair(file_path, pbuf));
+        }
+        catch (...) {
+            return false;
+        }
     }
 
     // calculate scale proportion based on the longer dimension

@@ -2,6 +2,7 @@
 
 // standard library
 #include <memory>
+#include <map>
 
 // gtkmm
 #include <gtkmm/liststore.h>
@@ -50,6 +51,8 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         void set_preview_size(PreviewSize size);
         PreviewSize get_preview_size() const;
         Glib::ustring get_file_path(const Gtk::TreePath &tpath) const;
+        void clear_cache();
+        void grab_focus();
 
         // signal forwarding
         Glib::SignalProxy<void (const Gtk::TreeModel::Path &)> signal_item_activated();
@@ -92,6 +95,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         bool label_is_child;
         PreviewSize size;
         IconModel icon_model;
+        std::map<Glib::ustring, Glib::RefPtr<Gdk::Pixbuf>> preview_cache;
 
         // functions
         bool add_item(size_t id, const Glib::ustring &file_path);
