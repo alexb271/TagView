@@ -277,7 +277,7 @@ void TagDb::write_to_file() const {
 
     output << "[exclude]";
     for (const Glib::ustring &tag : default_excluded_tags) {
-        output << tag.raw() << ' ';
+        output << tag.raw() << ',';
     }
 
     output << std::endl << std::endl;

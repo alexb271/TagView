@@ -64,7 +64,3 @@ void Config::write_to_file() {
         }
     }
 }
-
-void Config::parse_config() {
-
-}
