@@ -29,7 +29,9 @@ class PreferencesWindow : public Gtk::Window {
         Gtk::Box box;
         Gtk::Label lbl_default_db_title;
         Gtk::Label lbl_default_db_path;
+        Gtk::Box buttons;
         Gtk::Button btn_select_default_db;
+        Gtk::Button btn_clear_default_db;
 
         Gtk::Label lbl_preview_size;
         Gtk::Box checkbuttons;
@@ -41,6 +43,7 @@ class PreferencesWindow : public Gtk::Window {
 
         // signal handlers
         void on_select_default_db();
+        void on_clear_default_db();
         void on_toggled();
         void on_file_chooser_response(int respone_id);
         bool on_close_request() override;

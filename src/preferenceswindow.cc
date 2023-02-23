@@ -1,7 +1,5 @@
 // project
 #include "preferenceswindow.hh"
-#include "gtkmm/dialog.h"
-#include "gtkmm/window.h"
 
 PreferencesWindow::PreferencesWindow(Gtk::Window &parent) {
     // label setup
@@ -18,6 +16,17 @@ PreferencesWindow::PreferencesWindow(Gtk::Window &parent) {
     btn_select_default_db.set_expand(false);
     btn_select_default_db.signal_clicked().connect(
             sigc::mem_fun(*this, &PreferencesWindow::on_select_default_db));
+
+    btn_clear_default_db.set_label("Clear");
+    btn_clear_default_db.set_halign(Gtk::Align::START);
+    btn_clear_default_db.set_expand(false);
+    btn_clear_default_db.signal_clicked().connect(
+            sigc::mem_fun(*this, &PreferencesWindow::on_clear_default_db));
+
+    buttons.set_orientation(Gtk::Orientation::HORIZONTAL);
+    buttons.set_spacing(30);
+    buttons.append(btn_select_default_db);
+    buttons.append(btn_clear_default_db);
 
     // checkbutton setup
     small.set_label(" Small");
@@ -46,7 +55,7 @@ PreferencesWindow::PreferencesWindow(Gtk::Window &parent) {
 
     box.append(lbl_default_db_title);
     box.append(lbl_default_db_path);
-    box.append(btn_select_default_db);
+    box.append(buttons);
     box.append(lbl_preview_size);
     box.append(checkbuttons);
 
@@ -96,6 +105,11 @@ void PreferencesWindow::on_select_default_db() {
             sigc::mem_fun(*this, &PreferencesWindow::on_file_chooser_response));
 
     file_chooser->show();
+}
+
+void PreferencesWindow::on_clear_default_db() {
+    lbl_default_db_path.set_text("");
+    private_select_defualt_db.emit("");
 }
 
 void PreferencesWindow::on_toggled() {
