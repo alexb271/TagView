@@ -4,7 +4,7 @@
 // project
 #include "itemwindow.hh"
 
-ItemWindow::ItemWindow()
+ItemWindow::ItemWindow(Gtk::Window &parent)
 :
     tag_suggestions(ItemList::Type::OUTSIDE),
     default_directory("Database root"),
@@ -114,6 +114,7 @@ ItemWindow::ItemWindow()
     set_child(box);
     set_size_request(200, 200);
     set_default_size(400, 600);
+    set_transient_for(parent);
 }
 
 void ItemWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {

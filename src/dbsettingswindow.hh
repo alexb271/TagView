@@ -17,7 +17,7 @@
 
 class DbSettingsWindow : public Gtk::Window {
     public:
-        DbSettingsWindow();
+        DbSettingsWindow(Gtk::Window &parent);
 
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void setup(const Glib::ustring &db_path,

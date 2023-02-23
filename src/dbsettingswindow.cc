@@ -1,7 +1,7 @@
 // project
 #include "dbsettingswindow.hh"
 
-DbSettingsWindow::DbSettingsWindow()
+DbSettingsWindow::DbSettingsWindow(Gtk::Window &parent)
 :
     dirs(ItemList::Type::INSIDE)
 {
@@ -48,6 +48,7 @@ DbSettingsWindow::DbSettingsWindow()
     set_title("DB Settings");
     set_size_request(200, 200);
     set_default_size(400, 600);
+    set_transient_for(parent);
 }
 
 void DbSettingsWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {

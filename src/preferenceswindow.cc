@@ -1,8 +1,9 @@
 // project
 #include "preferenceswindow.hh"
 #include "gtkmm/dialog.h"
+#include "gtkmm/window.h"
 
-PreferencesWindow::PreferencesWindow() {
+PreferencesWindow::PreferencesWindow(Gtk::Window &parent) {
     // label setup
     lbl_default_db_title.set_markup("<span weight=\"bold\" size=\"large\">Default Database</span>");
     lbl_preview_size.set_markup("<span weight=\"bold\" size=\"large\">Preview Size</span>");
@@ -53,6 +54,7 @@ PreferencesWindow::PreferencesWindow() {
     set_title("Preferences");
     set_resizable(false);
     set_child(box);
+    set_transient_for(parent);
 }
 
 void PreferencesWindow::set_default_db_path(const Glib::ustring &default_db_path) {

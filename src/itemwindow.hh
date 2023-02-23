@@ -24,7 +24,7 @@
 
 class ItemWindow : public Gtk::Window {
     public:
-        ItemWindow();
+        ItemWindow(Gtk::Window &parent);
         void set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list);
         void set_directories(const std::set<Glib::ustring> &directories);
         void set_prefix(const std::string &prefix);

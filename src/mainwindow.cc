@@ -6,6 +6,9 @@
 
 MainWindow::MainWindow()
 :
+    item_window(*this),
+    db_settings_window(*this),
+    preferences_window(*this),
     key_controller(Gtk::EventControllerKey::create())
 {
     // configure image viewer controls

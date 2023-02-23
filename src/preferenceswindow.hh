@@ -16,7 +16,7 @@
 
 class PreferencesWindow : public Gtk::Window {
     public:
-        PreferencesWindow();
+        PreferencesWindow(Gtk::Window &parent);
         void set_default_db_path(const Glib::ustring &default_db_path);
         void set_preview_size(PreviewGallery::PreviewSize size);
 
