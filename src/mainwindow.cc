@@ -225,6 +225,7 @@ void MainWindow::on_reload_default_exclude_required() {
     for (const Glib::ustring &tag : db.get_default_excluded_tags()) {
         tag_picker.add_excluded_tag(tag);
     }
+    refresh_gallery();
 }
 
 void MainWindow::on_gallery_item_chosen(size_t id) {
