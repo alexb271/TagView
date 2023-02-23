@@ -34,7 +34,7 @@ DbSettingsWindow::DbSettingsWindow(Gtk::Window &parent)
 
     // box setup
     box.set_margin(15);
-    box.set_spacing(30);
+    box.set_spacing(15);
     box.set_orientation(Gtk::Orientation::VERTICAL);
 
     box.append(lbl_db_path);
