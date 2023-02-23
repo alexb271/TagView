@@ -171,6 +171,8 @@ void MainWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->set_hide_on_close(true);
         message->signal_response().connect(
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
+        message->set_transient_for(*this);
+        message->set_modal(true);
         message->show();
 }
 
@@ -366,6 +368,8 @@ void MainWindow::on_about() {
     about_dialog->set_website("https://github.com/alexb271/tagview/");
     about_dialog->set_website_label("https://github.com/alexb271/tagview/");
     about_dialog->set_license_type(Gtk::License::GPL_3_0);
+    about_dialog->set_transient_for(*this);
+    about_dialog->set_modal(true);
     about_dialog->show();
 }
 

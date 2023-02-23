@@ -115,6 +115,7 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     set_size_request(200, 200);
     set_default_size(400, 600);
     set_transient_for(parent);
+    set_modal(true);
 }
 
 void ItemWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {
@@ -347,6 +348,7 @@ void ItemWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
         message->set_hide_on_close(true);
         message->signal_response().connect(
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
+        message->set_modal(true);
         message->show();
 }
 

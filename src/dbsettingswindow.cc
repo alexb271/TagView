@@ -28,6 +28,7 @@ DbSettingsWindow::DbSettingsWindow(Gtk::Window &parent)
             false, Gtk::MessageType::WARNING);
     subdir_warning->set_secondary_text("Directory must be a subdirectory of where the database file is located.");
     subdir_warning->set_hide_on_close(true);
+    subdir_warning->set_modal(true);
     subdir_warning->signal_response().connect(
             sigc::hide(sigc::mem_fun(*subdir_warning, &Gtk::Widget::hide)));
 
@@ -49,6 +50,7 @@ DbSettingsWindow::DbSettingsWindow(Gtk::Window &parent)
     set_size_request(200, 200);
     set_default_size(400, 600);
     set_transient_for(parent);
+    set_modal(true);
 }
 
 void DbSettingsWindow::set_completer_model(Glib::RefPtr<Gtk::ListStore> completer_list) {

@@ -55,6 +55,7 @@ PreferencesWindow::PreferencesWindow(Gtk::Window &parent) {
     set_resizable(false);
     set_child(box);
     set_transient_for(parent);
+    set_modal(true);
 }
 
 void PreferencesWindow::set_default_db_path(const Glib::ustring &default_db_path) {
