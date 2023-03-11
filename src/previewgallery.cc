@@ -1,4 +1,6 @@
 // standard library
+#include <cmath>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 
@@ -184,13 +186,17 @@ void PreviewGallery::on_selection_changed() {
 // on right click, select the item and show a popup menu
 // allowing for the editing of tags
 void PreviewGallery::on_right_click(int n_times, double x, double y) {
-    auto tree_path = icon_view.get_path_at_pos(std::round(x), std::round(y));
+    int pos_x = std::round(x) + get_hadjustment()->get_value();
+    int pos_y = std::round(y) + get_vadjustment()->get_value();
+    auto tree_path = icon_view.get_path_at_pos(pos_x, pos_y);
 
     if (tree_path) {
         // show GtkPopup for editing item
         Gdk::Rectangle rect;
         if (icon_view.get_cell_rect(tree_path, rect)) {
             right_click_menu = std::make_unique<PreviewGallery::RightClickMenu>(*this);
+            rect.set_x(rect.get_x() - get_hadjustment()->get_value());
+            rect.set_y(rect.get_y() - get_vadjustment()->get_value());
             right_click_menu->set_pointing_to(rect);
 
             // set data for popup
