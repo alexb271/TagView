@@ -140,22 +140,23 @@ bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path) {
     else {
         try {
             pbuf = Gdk::Pixbuf::create_from_file(file_path);
+
+            // calculate scale proportion based on the longer dimension
+            int image_size = pbuf->get_width() > pbuf->get_height() ? pbuf->get_width() : pbuf->get_height();
+            double prop = (double)((int)size) / (double)image_size;
+
+            // scale image by proportion
+            pbuf = pbuf->scale_simple(
+                    std::round(pbuf->get_width() * prop),
+                    std::round(pbuf->get_height() * prop),
+                    Gdk::InterpType::BILINEAR);
+
             preview_cache.insert(std::make_pair(file_path, pbuf));
         }
         catch (...) {
             return false;
         }
     }
-
-    // calculate scale proportion based on the longer dimension
-    int image_size = pbuf->get_width() > pbuf->get_height() ? pbuf->get_width() : pbuf->get_height();
-    double prop = (double)((int)size) / (double)image_size;
-
-    // scale image by proportion
-    pbuf = pbuf->scale_simple(
-            std::round(pbuf->get_width() * prop),
-            std::round(pbuf->get_height() * prop),
-            Gdk::InterpType::BILINEAR);
 
     // add image to store
     auto row = *(store->append());
