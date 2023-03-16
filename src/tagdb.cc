@@ -93,7 +93,8 @@ bool TagDb::Item::operator<(const TagDb::Item &other) const {
         return false;
     }
     else {
-        return this->file_path < other.file_path;
+        return this->file_path.substr(this->file_path.find_last_of("/") + 1) <
+               other.file_path.substr(other.file_path.find_last_of("/") + 1);
     }
 }
 
