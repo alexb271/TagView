@@ -1,10 +1,11 @@
 // standard library
 #include <filesystem>
 
+// gtkmm
+#include <glibmm.h>
+
 // project
-#include "gtkmm/button.h"
-#include "gtkmm/enums.h"
-#include "gtkmm/object.h"
+#include "glibmm/spawn.h"
 #include "itemwindow.hh"
 
 ItemWindow::ItemWindow(Gtk::Window &parent)
@@ -16,6 +17,12 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     suggestion_count(5),
     preview_size(256)
 {
+    // item path setup
+    btn_item_path.set_has_frame(false);
+    btn_item_path.set_halign(Gtk::Align::CENTER);
+    btn_item_path.signal_clicked().connect(
+            sigc::mem_fun(*this, &ItemWindow::on_item_path_clicked));
+
     // label setup
     lbl_copy_to_dir.set_markup("<span weight=\"bold\" size=\"large\">Copy To Directory</span>");
     lbl_copy_to_dir.set_halign(Gtk::Align::START);
@@ -113,7 +120,7 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     box.set_orientation(Gtk::Orientation::VERTICAL);
 
     // append items to box
-    box.append(lbl_item_path);
+    box.append(btn_item_path);
     box.append(item_preview_error);
     box.append(item_preview);
     box.append(lbl_copy_to_dir);
@@ -194,7 +201,6 @@ void ItemWindow::edit_item(const TagDb::Item &item) {
     }
     in_edit_mode = true;
     current_edited_item_type = item.get_type();
-    current_edited_item_file_path = item.get_file_path();
     setup_for_edit_item(item);
     show();
 }
@@ -216,8 +222,9 @@ sigc::signal<void (const Glib::ustring &, bool)> ItemWindow::signal_delete_item(
 }
 
 void ItemWindow::setup_for_add_item(size_t idx) {
+    current_edited_item_file_path = items_to_add.at(idx);
     set_title(std::to_string(idx + 1) + "/" + std::to_string(items_to_add.size()));
-    lbl_item_path.set_text(items_to_add.at(idx));
+    btn_item_path.set_label(items_to_add.at(idx));
     set_preview(items_to_add.at(idx));
 
 
@@ -245,7 +252,8 @@ void ItemWindow::setup_for_add_item(size_t idx) {
 void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
 {
     set_title("Edit Item");
-    lbl_item_path.set_text(item.get_file_path());
+    current_edited_item_file_path = item.get_file_path();
+    btn_item_path.set_label(item.get_file_path());
     set_preview(prefix + item.get_file_path());
     chk_fav.set_active(item.get_favorite());
 
@@ -357,6 +365,19 @@ void ItemWindow::show_warning(Glib::ustring primary, Glib::ustring secondary) {
                 sigc::hide(sigc::mem_fun(*message, &Gtk::Widget::hide)));
         message->set_modal(true);
         message->show();
+}
+
+void ItemWindow::on_item_path_clicked() {
+    std::string command;
+    if (in_edit_mode) {
+        command = std::string("xdg-open ") +
+                  std::string("\"") + prefix + current_edited_item_file_path + std::string("\"");
+    }
+    else {
+        command = std::string("xdg-open ") +
+                  std::string("\"") + current_edited_item_file_path + std::string("\"");
+    }
+    Glib::spawn_command_line_sync(command.c_str());
 }
 
 void ItemWindow::on_tag_editor_contents_changed(const std::set<Glib::ustring> &tags) {

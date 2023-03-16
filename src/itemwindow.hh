@@ -50,7 +50,7 @@ class ItemWindow : public Gtk::Window {
     private:
         // widgets
         Gtk::Box box;
-        Gtk::Label lbl_item_path;
+        Gtk::Button btn_item_path;
 
         // preview
         Gtk::Label item_preview_error;
@@ -103,6 +103,7 @@ class ItemWindow : public Gtk::Window {
         void show_warning(Glib::ustring primary, Glib::ustring secondary);
 
         // signal handlers
+        void on_item_path_clicked();
         void on_tag_editor_contents_changed(const std::set<Glib::ustring> &tags);
         void on_add_suggestion(const Glib::ustring &tag);
         void on_add();
