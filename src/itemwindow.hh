@@ -9,7 +9,6 @@
 #include <gtkmm/window.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/box.h>
-#include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
@@ -62,7 +61,8 @@ class ItemWindow : public Gtk::Window {
         Gtk::CheckButton chk_fav;
 
         // tag editor with suggestions
-        Gtk::Grid editor_grid;
+        Gtk::Box editor_box;
+        Gtk::Box suggestions_box;
         TagPickerBase tag_editor;
         Gtk::Label lbl_suggestions;
         ItemList tag_suggestions;

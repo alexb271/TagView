@@ -2,6 +2,9 @@
 #include <filesystem>
 
 // project
+#include "gtkmm/button.h"
+#include "gtkmm/enums.h"
+#include "gtkmm/object.h"
 #include "itemwindow.hh"
 
 ItemWindow::ItemWindow(Gtk::Window &parent)
@@ -23,8 +26,6 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     item_preview_error.set_margin_bottom(10);
     item_preview_error.set_visible(false);
     item_preview.set_size_request(preview_size, preview_size);
-    item_preview.set_margin_top(10);
-    item_preview.set_margin_bottom(10);
     item_preview.set_visible(false);
 
     // combo box setup
@@ -42,59 +43,67 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     // suggestions setup
     lbl_suggestions.set_markup("<span weight=\"bold\" size=\"medium\">Suggestions</span>");
     lbl_suggestions.set_margin_start(60);
-    lbl_suggestions.set_valign(Gtk::Align::END);
+    lbl_suggestions.set_valign(Gtk::Align::START);
     tag_suggestions.set_margin_start(60);
-    tag_suggestions.set_margin_top(15);
+    tag_suggestions.set_margin_top(10);
     tag_suggestions.set_valign(Gtk::Align::START);
+    tag_suggestions.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::NEVER);
     tag_suggestions.signal_add().connect(
             sigc::mem_fun(*this, &ItemWindow::on_add_suggestion));
 
-    // suggestions are only shown if there are contents
-    lbl_suggestions.set_visible(false);
-    tag_suggestions.set_visible(false);
+    // editor layout setup
+    suggestions_box.set_halign(Gtk::Align::START);
+    suggestions_box.set_orientation(Gtk::Orientation::VERTICAL);
+    suggestions_box.append(lbl_suggestions);
+    suggestions_box.append(tag_suggestions);
 
-    // editor grid setup
-    editor_grid.set_expand(false);
-    editor_grid.set_halign(Gtk::Align::START);
-    editor_grid.attach(tag_editor, 0, 0, 1, 2);
-    editor_grid.attach(lbl_suggestions, 1, 0);
-    editor_grid.attach(tag_suggestions, 1, 1);
+    // suggestions are only shown if there are contents
+    suggestions_box.set_visible(false);
+
+    editor_box.set_halign(Gtk::Align::START);
+    editor_box.set_orientation(Gtk::Orientation::HORIZONTAL);
+    editor_box.append(tag_editor);
+    editor_box.append(suggestions_box);
 
     // checkbox setup
     chk_fav.set_label(" Favorite");
 
     // add mode buttons
     btn_skip.set_label("Skip");
+    btn_skip.set_valign(Gtk::Align::END);
     btn_skip.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_skip));
 
     btn_add.set_label("Add");
     btn_add.set_halign(Gtk::Align::END);
+    btn_add.set_valign(Gtk::Align::END);
     btn_add.set_hexpand(true);
     btn_add.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_add));
 
     buttons_mode_add.set_orientation(Gtk::Orientation::HORIZONTAL);
     buttons_mode_add.set_valign(Gtk::Align::END);
-    buttons_mode_add.set_expand(false);
+    buttons_mode_add.set_expand(true);
     buttons_mode_add.append(btn_skip);
     buttons_mode_add.append(btn_add);
 
     // edit_mode_buttons
     btn_delete.set_label("Delete");
+    btn_delete.set_valign(Gtk::Align::END);
     btn_delete.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_delete));
 
 
     btn_edit.set_label("Apply");
     btn_edit.set_halign(Gtk::Align::END);
+    btn_edit.set_valign(Gtk::Align::END);
     btn_edit.set_hexpand(true);
     btn_edit.signal_clicked().connect(
             sigc::mem_fun(*this, &ItemWindow::on_edit));
 
     buttons_mode_edit.set_orientation(Gtk::Orientation::HORIZONTAL);
     buttons_mode_edit.set_valign(Gtk::Align::END);
-    buttons_mode_edit.set_expand(false);
+    buttons_mode_edit.set_expand(true);
     buttons_mode_edit.append(btn_delete);
     buttons_mode_edit.append(btn_edit);
 
@@ -110,7 +119,7 @@ ItemWindow::ItemWindow(Gtk::Window &parent)
     box.append(lbl_copy_to_dir);
     box.append(combo_dirs);
     box.append(chk_fav);
-    box.append(editor_grid);
+    box.append(editor_box);
     box.append(buttons_mode_add);
 
     set_child(box);
@@ -140,8 +149,7 @@ void ItemWindow::set_prefix(const std::string &prefix) {
 
 void ItemWindow::set_suggestions(const std::vector<Glib::ustring> &tags) {
     if (tags.size() == 0) {
-        lbl_suggestions.set_visible(false);
-        tag_suggestions.set_visible(false);
+        suggestions_box.set_visible(false);
         return;
     }
 
@@ -159,12 +167,10 @@ void ItemWindow::set_suggestions(const std::vector<Glib::ustring> &tags) {
     }
 
     if (tag_suggestions.size() > 0) {
-        lbl_suggestions.set_visible(true);
-        tag_suggestions.set_visible(true);
+        suggestions_box.set_visible(true);
     }
     else {
-        lbl_suggestions.set_visible(false);
-        tag_suggestions.set_visible(false);
+        suggestions_box.set_visible(false);
     }
 }
 
@@ -233,8 +239,7 @@ void ItemWindow::setup_for_add_item(size_t idx) {
     chk_fav.set_active(false);
     tag_editor.clear();
     tag_suggestions.clear();
-    lbl_suggestions.set_visible(false);
-    tag_suggestions.set_visible(false);
+    suggestions_box.set_visible(false);
 }
 
 void ItemWindow::setup_for_edit_item(const TagDb::Item &item)
