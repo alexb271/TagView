@@ -52,6 +52,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         PreviewSize get_preview_size() const;
         Glib::ustring get_file_path(const Gtk::TreePath &tpath) const;
         void clear_cache();
+        void remove_from_cache(const Glib::ustring &item);
         void grab_focus();
 
         // signal forwarding

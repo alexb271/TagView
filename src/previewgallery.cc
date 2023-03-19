@@ -103,6 +103,10 @@ void PreviewGallery::clear_cache() {
     preview_cache.clear();
 }
 
+void PreviewGallery::remove_from_cache(const Glib::ustring &item) {
+    preview_cache.erase(item);
+}
+
 void PreviewGallery::grab_focus() {
     icon_view.grab_focus();
 }

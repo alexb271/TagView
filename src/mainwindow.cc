@@ -417,7 +417,7 @@ void MainWindow::on_delete_item(const Glib::ustring &file_path, bool delete_file
     db.delete_item(file_path, delete_file);
     set_completer_data(db.get_all_tags());
 
-    gallery.clear_cache();
+    gallery.remove_from_cache(file_path);
     refresh_gallery();
 }
 
