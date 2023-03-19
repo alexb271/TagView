@@ -99,6 +99,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         void on_gallery_item_selected(size_t id);
         void on_gallery_failed_to_open(size_t id);
         void on_gallery_edit(const Glib::ustring &file_path);
+        void on_gallery_generation_status_changed(bool generation_in_progress);
 
         // image viewer
         void on_hide_viewer();

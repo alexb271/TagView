@@ -15,8 +15,8 @@
 #include <gdkmm/pixbuf.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/box.h>
-#include <gtkmm/checkbutton.h>
 #include <gtkmm/button.h>
+#include <gtkmm/progressbar.h>
 
 // project
 #include "tagdb.hh"
@@ -61,6 +61,7 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         sigc::signal<void (size_t)> signal_item_selected();
         sigc::signal<void (size_t)> signal_failed_to_open();
         sigc::signal<void (const Glib::ustring &)> signal_edit();
+        sigc::signal<void (bool)> signal_generation_status_changed();
 
     private: class RightClickMenu : public Gtk::Popover {
                  public:
@@ -89,11 +90,12 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         Glib::RefPtr<Gtk::ListStore> store;
         Glib::RefPtr<Gtk::GestureClick> click;
         Gtk::Label no_items_label;
+        Gtk::ProgressBar progress_bar;
 
         std::unique_ptr<RightClickMenu> right_click_menu;
 
         // members
-        bool label_is_child;
+        bool icon_view_is_not_child;
         PreviewSize size;
         IconModel icon_model;
         std::map<Glib::ustring, Glib::RefPtr<Gdk::Pixbuf>> preview_cache;
@@ -113,4 +115,5 @@ class PreviewGallery : public Gtk::ScrolledWindow {
         sigc::signal<void (size_t)> private_signal_item_selected;
         sigc::signal<void (size_t)> private_signal_failed_to_open;
         sigc::signal<void (const Glib::ustring &)> private_edit;
+        sigc::signal<void (bool)> private_generation_status_changed;
 };

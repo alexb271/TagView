@@ -66,6 +66,8 @@ MainWindow::MainWindow()
             sigc::mem_fun(*this, &MainWindow::on_gallery_failed_to_open));
     gallery.signal_edit().connect(
             sigc::mem_fun(*this, &MainWindow::on_gallery_edit));
+    gallery.signal_generation_status_changed().connect(
+            sigc::mem_fun(*this, &MainWindow::on_gallery_generation_status_changed));
 
     // configure main box
     box.set_orientation(Gtk::Orientation::HORIZONTAL);
@@ -267,6 +269,17 @@ void MainWindow::on_gallery_failed_to_open(size_t id) {
 
 void MainWindow::on_gallery_edit(const Glib::ustring &file_path) {
     item_window.edit_item(db.get_item(file_path));
+}
+
+void MainWindow::on_gallery_generation_status_changed(bool generation_in_progress) {
+    tag_picker.set_sensitive(!generation_in_progress);
+    button_main_menu.set_sensitive(!generation_in_progress);
+    viewer_controls.set_sensitive(!generation_in_progress);
+
+    // iterate the main GUI loop to update the GUI
+    while(g_main_context_pending(g_main_context_get_thread_default())) {
+        g_main_context_iteration(g_main_context_get_thread_default(), TRUE);
+    }
 }
 
 void MainWindow::on_hide_viewer() {

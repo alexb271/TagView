@@ -1,4 +1,5 @@
 // standard library
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -10,6 +11,7 @@
 #include <gdkmm/rectangle.h>
 
 // project
+#include "glibmm/main.h"
 #include "previewgallery.hh"
 
 // PreviewGallery implementation
@@ -22,6 +24,13 @@ PreviewGallery::PreviewGallery(PreviewSize size)
     no_items_label.set_halign(Gtk::Align::CENTER);
     no_items_label.set_valign(Gtk::Align::CENTER);
     no_items_label.set_expand(true);
+
+    // configure progress bar
+    progress_bar.set_valign(Gtk::Align::CENTER);
+    progress_bar.set_text("Generating previews");
+    progress_bar.set_show_text(true);
+    progress_bar.set_expand(true);
+    progress_bar.set_margin(30);
 
     // setup ListStore with this IconView
     store = Gtk::ListStore::create(icon_model),
@@ -36,7 +45,7 @@ PreviewGallery::PreviewGallery(PreviewSize size)
     // the initial child is the label
     // as there are no items loaded by default
     set_child(no_items_label);
-    label_is_child = true;
+    icon_view_is_not_child = true;
 
     // signal handling
     icon_view.signal_item_activated().connect(
@@ -62,15 +71,27 @@ void PreviewGallery::set_content(const std::vector<Glib::ustring> &file_paths) {
 
     // if content is empty, show the no items label
     if (file_paths.size() == 0) {
-        if (!label_is_child) {
+        if (!icon_view_is_not_child) {
             set_child(no_items_label);
-            label_is_child = true;
+            icon_view_is_not_child = true;
         }
         return;
     }
 
+    // enble progress bar
+    private_generation_status_changed.emit(true);
+    set_child(progress_bar);
+    icon_view_is_not_child = true;
+
     // add items
     for (size_t idx = 0; idx < file_paths.size(); idx++) {
+        progress_bar.set_fraction(((double)(idx + 1)) / (double)file_paths.size());
+
+        // iterate the main GUI loop to update the GUI
+        while(g_main_context_pending(g_main_context_get_thread_default())) {
+            g_main_context_iteration(g_main_context_get_thread_default(), TRUE);
+        }
+
         bool result = add_item(idx, file_paths.at(idx));
         if (!result) {
             private_signal_failed_to_open.emit(idx);
@@ -78,11 +99,13 @@ void PreviewGallery::set_content(const std::vector<Glib::ustring> &file_paths) {
         }
     }
 
+    private_generation_status_changed.emit(false);
+
     // now that contents are available
     // the iconview can be set as child
-    if (label_is_child) {
+    if (icon_view_is_not_child) {
         set_child(icon_view);
-        label_is_child = false;
+        icon_view_is_not_child = false;
     }
 }
 
@@ -129,6 +152,10 @@ sigc::signal<void (size_t)> PreviewGallery::signal_failed_to_open() {
 
 sigc::signal<void (const Glib::ustring &)> PreviewGallery::signal_edit() {
     return private_edit;
+}
+
+sigc::signal<void (bool)> PreviewGallery::signal_generation_status_changed() {
+    return private_generation_status_changed;
 }
 
 bool PreviewGallery::add_item(size_t id, const Glib::ustring &file_path) {
