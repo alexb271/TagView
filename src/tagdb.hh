@@ -76,6 +76,8 @@ class TagDb {
             Glib::ustring file_path;
     };
 
+    public: enum class QueryType { OR, AND };
+
     // main class implementation
     public:
         TagDb();
@@ -90,6 +92,7 @@ class TagDb {
 
         void set_directories(const std::set<Glib::ustring> &dirs);
         void set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tags);
+        void set_query_type(QueryType query_type);
 
         std::set<Glib::ustring> get_all_tags() const;
         const std::set<Glib::ustring> &get_default_excluded_tags() const;
@@ -100,6 +103,10 @@ class TagDb {
 
         std::vector<Glib::ustring> query(const std::set<Glib::ustring> &tags_include,
                                          const std::set<Glib::ustring> &tags_exclude) const;
+        std::vector<Glib::ustring> query_or(const std::set<Glib::ustring> &tags_include,
+                                            const std::set<Glib::ustring> &tags_exclude) const;
+        std::vector<Glib::ustring> query_and(const std::set<Glib::ustring> &tags_include,
+                                             const std::set<Glib::ustring> &tags_exclude) const;
 
         std::vector<Glib::ustring> suggestions(const std::set<Glib::ustring> &tags_include);
 
@@ -110,6 +117,7 @@ class TagDb {
         std::vector<Item> items;
         std::set<Glib::ustring> directories;
         std::set<Glib::ustring> default_excluded_tags;
+        QueryType query_type;
 
         // functions
         std::set<Glib::ustring> parse_tags(const std::string &str);

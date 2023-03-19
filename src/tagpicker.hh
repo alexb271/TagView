@@ -4,14 +4,15 @@
 #include <set>
 
 // gtkmm
+#include <gtkmm/box.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/separator.h>
-#include <glibmm/ustring.h>
-#include <sigc++/signal.h>
 
 // project
 #include "tagutils.hh"
+#include "tagdb.hh"
 
 class TagPicker : public TagPickerBase {
     public:
@@ -24,11 +25,16 @@ class TagPicker : public TagPickerBase {
         void clear_current_item_tags();
 
         // signal forwarding
+        sigc::signal<void (TagDb::QueryType)> signal_filter_toggled();
         sigc::signal<void (TagQuery)> signal_query_changed();
         Glib::SignalProxy<void ()> signal_reload_default_exclude_required();
 
     private:
         // widgets
+        Gtk::Box filter_box;
+        Gtk::Label lbl_filter;
+        Gtk::CheckButton chk_filter_or;
+        Gtk::CheckButton chk_filter_and;
         Gtk::Label lbl_tags_exclude;
         Gtk::Button btn_reload_default_exclude;
         ItemList tags_exclude;
@@ -39,10 +45,12 @@ class TagPicker : public TagPickerBase {
         Gtk::Separator sep2;
 
         // signal handlers
+        void on_filter_toggled();
         void on_signal_add(const Glib::ustring &tag);
         void on_signal_exclude(const Glib::ustring &tag);
         void on_content_changed(const std::set<Glib::ustring> &tags);
 
         // signals
+        sigc::signal<void (TagDb::QueryType)> private_filter_toggled;
         sigc::signal<void (TagQuery)> private_query_changed;
 };

@@ -49,6 +49,8 @@ MainWindow::MainWindow()
     tag_picker.set_halign(Gtk::Align::START);
     tag_picker.set_valign(Gtk::Align::START);
     tag_picker.set_margin(15);
+    tag_picker.signal_filter_toggled().connect(
+            sigc::mem_fun(*this, &MainWindow::on_filter_toggled));
     tag_picker.signal_query_changed().connect(
             sigc::mem_fun(*this, &MainWindow::on_tag_query_changed));
     tag_picker.signal_reload_default_exclude_required().connect(
@@ -212,6 +214,11 @@ bool MainWindow::on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType s
         return true;
     }
     return false;
+}
+
+void MainWindow::on_filter_toggled(TagDb::QueryType query_type) {
+    db.set_query_type(query_type);
+    refresh_gallery();
 }
 
 void MainWindow::on_tag_query_changed(TagQuery tag_selection) {

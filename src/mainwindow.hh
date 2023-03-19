@@ -90,6 +90,7 @@ class MainWindow : public Gtk::ApplicationWindow {
         bool on_key_pressed(guint keyval, guint keycode, Gdk::ModifierType state);
 
         // tag picker
+        void on_filter_toggled(TagDb::QueryType query_type);
         void on_tag_query_changed(TagQuery tag_selection);
         void on_reload_default_exclude_required();
 

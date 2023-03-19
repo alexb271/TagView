@@ -7,15 +7,17 @@ TagPicker::TagPicker()
     tags_exclude(ItemList::Type::INSIDE),
     tags_current_item(ItemList::Type::OUTSIDE_WITH_EXCLUDE)
 {
-    // connect signals
-    tags.signal_contents_changed().connect(
-            sigc::mem_fun(*this, &TagPicker::on_content_changed));
-    tags_exclude.signal_contents_changed().connect(
-            sigc::mem_fun(*this, &TagPicker::on_content_changed));
-    tags_current_item.signal_add().connect(
-            sigc::mem_fun(*this, &TagPicker::on_signal_add));
-    tags_current_item.signal_exclude().connect(
-            sigc::mem_fun(*this, &TagPicker::on_signal_exclude));
+    // filter setup
+    filter_box.set_orientation(Gtk::Orientation::HORIZONTAL);
+    filter_box.set_spacing(15);
+    lbl_filter.set_markup("<span weight=\"bold\">Filter:</span>");
+    chk_filter_or.set_label(" Or");
+    chk_filter_and.set_label(" And");
+    chk_filter_and.set_group(chk_filter_or);
+    chk_filter_or.set_active(true);
+    filter_box.append(lbl_filter);
+    filter_box.append(chk_filter_or);
+    filter_box.append(chk_filter_and);
 
     // label setup
     lbl_tags.set_markup("<span weight=\"bold\" size=\"large\">Include</span>");
@@ -28,6 +30,7 @@ TagPicker::TagPicker()
     btn_reload_default_exclude.set_halign(Gtk::Align::CENTER);
     btn_reload_default_exclude.set_has_frame(false);
 
+    prepend(filter_box);
     append(sep1);
     append(lbl_tags_exclude);
     append(btn_reload_default_exclude);
@@ -37,6 +40,20 @@ TagPicker::TagPicker()
     append(tags_current_item);
 
     set_allow_create_new_tag(false);
+
+    // connect signals
+    chk_filter_or.signal_toggled().connect(
+            sigc::mem_fun(*this, &TagPicker::on_filter_toggled));
+    chk_filter_and.signal_toggled().connect(
+            sigc::mem_fun(*this, &TagPicker::on_filter_toggled));
+    tags.signal_contents_changed().connect(
+            sigc::mem_fun(*this, &TagPicker::on_content_changed));
+    tags_exclude.signal_contents_changed().connect(
+            sigc::mem_fun(*this, &TagPicker::on_content_changed));
+    tags_current_item.signal_add().connect(
+            sigc::mem_fun(*this, &TagPicker::on_signal_add));
+    tags_current_item.signal_exclude().connect(
+            sigc::mem_fun(*this, &TagPicker::on_signal_exclude));
 }
 
 TagQuery TagPicker::get_current_query() const {
@@ -62,12 +79,25 @@ void TagPicker::clear_current_item_tags() {
     tags_current_item.clear();
 }
 
+sigc::signal<void (TagDb::QueryType)> TagPicker::signal_filter_toggled() {
+    return private_filter_toggled;
+}
+
 sigc::signal<void (TagQuery)> TagPicker::signal_query_changed() {
     return private_query_changed;
 }
 
 Glib::SignalProxy<void ()> TagPicker::signal_reload_default_exclude_required() {
     return btn_reload_default_exclude.signal_clicked();
+}
+
+void TagPicker::on_filter_toggled() {
+    if (chk_filter_or.get_active()) {
+        private_filter_toggled.emit(TagDb::QueryType::OR);
+    }
+    else if (chk_filter_and.get_active()) {
+        private_filter_toggled.emit(TagDb::QueryType::AND);
+    }
 }
 
 void TagPicker::on_signal_add(const Glib::ustring &tag) {

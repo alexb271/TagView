@@ -124,7 +124,7 @@ std::ostream& operator<<(std::ostream &os, TagDb::Item item) {
 }
 
 // TagDb implementation
-TagDb::TagDb()
+TagDb::TagDb() : query_type(TagDb::QueryType::OR)
 {}
 
 void TagDb::create_database(const std::string &db_file_path) {
@@ -354,6 +354,10 @@ void TagDb::set_default_excluded_tags(const std::set<Glib::ustring> &exclude_tag
     write_to_file();
 }
 
+void TagDb::set_query_type(TagDb::QueryType query_type) {
+    this->query_type = query_type;
+}
+
 std::set<Glib::ustring> TagDb::get_all_tags() const {
     std::set<Glib::ustring> result;
 
@@ -406,6 +410,16 @@ const TagDb::Item &TagDb::get_item(const Glib::ustring &file_path) const {
 std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_include,
                                         const std::set<Glib::ustring> &tags_exclude) const
 {
+    switch(query_type) {
+        case TagDb::QueryType::OR: return query_or(tags_include, tags_exclude);
+        case TagDb::QueryType::AND: return query_and(tags_include, tags_exclude);
+        default: return query_or(tags_include, tags_exclude);
+    }
+}
+
+std::vector<Glib::ustring> TagDb::query_or(const std::set<Glib::ustring> &tags_include,
+                                           const std::set<Glib::ustring> &tags_exclude) const
+{
     std::vector<Glib::ustring> result;
     std::vector<const TagDb::Item *> result_items;
 
@@ -421,6 +435,47 @@ std::vector<Glib::ustring> TagDb::query(const std::set<Glib::ustring> &tags_incl
         // included in the query, add its file path
         // to the result
         if (item.is_tagged(tags_include)) {
+            result_items.push_back(&item);
+        }
+    }
+
+    // sort the items before extracting the file paths
+    // the items sort favorites first by their overloaded operator
+    std::sort(result_items.begin(), result_items.end(),
+              [](const TagDb::Item *a, const TagDb::Item *b){ return (*a) < (*b); });
+
+    for (const TagDb::Item *item : result_items) {
+        result.push_back(prefix + item->get_file_path());
+    }
+
+    return result;
+}
+
+std::vector<Glib::ustring> TagDb::query_and(const std::set<Glib::ustring> &tags_include,
+                                           const std::set<Glib::ustring> &tags_exclude) const
+{
+    std::vector<Glib::ustring> result;
+    std::vector<const TagDb::Item *> result_items;
+
+    for (const TagDb::Item &item : items) {
+        // if item is tagged with a tag that is
+        // excluded from the query, then continue
+        // the loop, ignoring the item
+        if (item.is_tagged(tags_exclude)) {
+            continue;
+        }
+
+        // if item is tagged with all tags that are
+        // included in the query, add its file path
+        // to the result
+        bool has_all = true;
+        for (const Glib::ustring &tag : tags_include) {
+            if (!item.is_tagged(tag)) {
+                has_all = false;
+                break;
+            }
+        }
+        if (has_all) {
             result_items.push_back(&item);
         }
     }
